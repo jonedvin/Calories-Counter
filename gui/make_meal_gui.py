@@ -148,6 +148,10 @@ class MakeMealWidget(QWidget):
         calories, empty_ingredient = self.calculate(fill_to_target=True)
         calories_to_go = target-calories
 
+        if not empty_ingredient:
+            print("Please remove amount for 1 (one) ingredient.")
+            return
+
         # Make sure we're not in negatives
         if calories_to_go < 0:
             print(f"The selected amount is already higher than target: {calories}")

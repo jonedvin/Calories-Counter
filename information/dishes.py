@@ -11,5 +11,10 @@ dishes = {
         "Dijon mustard": Ingredient(unit.tbsp, 2),
         "Soy sauce": Ingredient(unit.tsp, 2),
         "Chicken stock": Ingredient(unit.unit, 2)
+    },
+    "Corn flakes": {
+        "Corn flakes": Ingredient(unit.g, 105),
+        "Strawberry jam": Ingredient(unit.g, 139),
+        "Milk": Ingredient(unit.g, 321)
     }
 }

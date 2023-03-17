@@ -84,11 +84,51 @@ ingredients = {
         "Protein": 5.7,
         "Salt": 33
     },
+    "Corn flakes": {
+        "to_grams": 1,
+        "Calories": 380,
+        "Fat": 1,
+        "'- of which saturated": 0.2,
+        "Carbohydrates": 83,
+        "'- of which sugar": 6.6,
+        "Protein": 8,
+        "Salt": 1.2
+    },
+    "Strawberry jam": {
+        "to_grams": 1,
+        "Calories": 195,
+        "Fat": 0.2,
+        "'- of which saturated": 0,
+        "Carbohydrates": 46,
+        "'- of which sugar": 46,
+        "Protein": 0.3,
+        "Salt": 0
+    },
+    "Milk": {
+        "to_grams": 1,
+        "Calories": 37,
+        "Fat": 0.5,
+        "'- of which saturated": 0.3,
+        "Carbohydrates": 4.5,
+        "'- of which sugar": 4.5,
+        "Protein": 3.5,
+        "Salt": 0.1
+    },
+    "Puffet havre": {
+        "to_grams": 1,
+        "Calories": 390,
+        "Fat": 7.9,
+        "'- of which saturated": 1.4,
+        "Carbohydrates": 65,
+        "'- of which sugar": 0,
+        "Protein": 11,
+        "Salt": 0.02
+    },
 }
 
 template = {
     "template": {
-        "to_100g": 1,
+        "to_grams": 1,
         "Calories": 100,
         "Fat": 100,
         "'- of which saturated": 100,
