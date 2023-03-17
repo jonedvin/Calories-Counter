@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QComboBox, QTreeWidget, QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout
-from modules.helper import IngredientItem, NutrientsTable
+from pyqt_modules.ingredient_item import IngredientItem
+from pyqt_modules.nutrients_table import NutrientsTable
 from modules.load_ingredients import get_ingredients, get_dishes
 
 
@@ -61,6 +62,7 @@ class MakeMealWidget(QWidget):
 
         # Signals
         self.meal.currentTextChanged.connect(self.update_ingredients)
+        self.meal.currentTextChanged.connect(self.nutrients_table.clear_nutrients)
         self.calculate_button.clicked.connect(self.calculate)
         self.fill_to_target_button.clicked.connect(self.fill_to_target)
         self.target.editingFinished.connect(self.fill_to_target)
@@ -138,3 +140,6 @@ class MakeMealWidget(QWidget):
         empty_ingredient.setAmount(round(amount, 1))
         self.calculate()
     
+
+    def save_made_meal(meal_name: str, nutrients):
+        pass
