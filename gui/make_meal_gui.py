@@ -1,7 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QComboBox, QTreeWidget, QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout
 from modules.helper import IngredientItem, NutrientsTable
-from information.ingredients import ingredients
-from information.dishes import dishes
+from modules.load_ingredients import get_ingredients, get_dishes
 
 
 class MakeMealWidget(QWidget):
@@ -11,10 +10,17 @@ class MakeMealWidget(QWidget):
         """ Widget with components for calculating the nutrients of a meal. """
         super().__init__(*args, **kwargs)
 
+        # Get dishes and ingredients
+        self.ingredients = get_ingredients()
+        self.dishes = get_dishes(self.ingredients)
+
+        # Current dish
+        self.current_dish = None
+
         # Compnonents
         self.meal = QComboBox()
         self.meal.addItem("")
-        for dish in dishes:
+        for dish in self.dishes:
             self.meal.addItem(dish)
 
         self.ingredients_tree = QTreeWidget()
@@ -26,6 +32,7 @@ class MakeMealWidget(QWidget):
         self.ingredients_tree.setIndentation(5)
 
         self.calculate_button = QPushButton("Calculate")
+        self.calculate_button.setEnabled(False)
         self.fill_to_target_button = QPushButton("Fill to target")
         self.target = QLineEdit()
         self.calculate_layout = QHBoxLayout()
@@ -62,77 +69,48 @@ class MakeMealWidget(QWidget):
 
     def update_ingredients(self):
         """ Updates the ingredients list according to dish selected. """
+
+        # Clear ingredients
+        while self.ingredients_tree.topLevelItemCount() > 0:
+            self.ingredients_tree.takeTopLevelItem(0)
+
         # Remove ingredients if nothing is selected
         if not self.meal.currentText():
-            while self.ingredients_tree.topLevelItemCount() > 0:
-                self.ingredients_tree.takeTopLevelItem(0)
             self.calculate_button.setEnabled(False)
+            self.current_dish = None
             return
+        
+        # Update self.current_dish
+        self.current_dish = self.dishes[self.meal.currentText()]
 
         # Update ingredients
         self.calculate_button.setEnabled(True)
-        for ingredient, info in dishes[self.meal.currentText()].items():
-            standard_amount = str(info.standard_amount) if info.standard_amount else ""
-            ingredient_item = IngredientItem(ingredient, info.unit, self.AmountColumn, tree=self.ingredients_tree)
-            ingredient_item.addQLineWidget(self.AmountColumn, standard_amount)
-
-
-    def calculate(self, fill_to_target: bool = False):
-        """
-        Calculates and updates gui with nutrient values for the selected meal.\n
-        If fill_to_target: returns the total calories and the empty ingredient.
-        """
-        # Initial values
-        calories = 0
-        fat = 0
-        saturated_fat = 0
-        carbohydrates = 0
-        sugar = 0
-        protein = 0
-        salt = 0
-
-        # Calculate totals
-        empty_ingredient = None
-        for i in range(self.ingredients_tree.topLevelItemCount()):
-            ingredient = self.ingredients_tree.topLevelItem(i)
-
-            amount = ingredient.getAmount()
-            if amount == 0:
-
-                # Ignore a single empty ingredient if filling
-                if fill_to_target:
-                    if empty_ingredient:
-                        print("Fill in the amount for all but 1 (one) ingredient.")
-                        return
-                    empty_ingredient = ingredient
-                    continue
-
-                # Panic
-                else:
-                    print(f"{ingredient.name} does not have a value.")
-                    return
-            
-            # Add to totals
-            amount_in_grams = amount*ingredients[ingredient.name]["to_grams"]
-            calories += ingredients[ingredient.name]["Calories"]*amount_in_grams/100
-            fat += ingredients[ingredient.name]["Fat"]*amount_in_grams/100
-            saturated_fat += ingredients[ingredient.name]["'- of which saturated"]*amount_in_grams/100
-            carbohydrates += ingredients[ingredient.name]["Carbohydrates"]*amount_in_grams/100
-            sugar += ingredients[ingredient.name]["'- of which sugar"]*amount_in_grams/100
-            protein += ingredients[ingredient.name]["Protein"]*amount_in_grams/100
-            salt += ingredients[ingredient.name]["Salt"]*amount_in_grams/100
-
-        # Return result
-        if fill_to_target:
-            return calories, empty_ingredient
-        else:
-            self.nutrients_table.setValues(calories, fat, saturated_fat, carbohydrates, sugar, protein, salt)
+        for _, ingredient_in_dish in self.current_dish.ingredients_in_dish.items():
+            standard_amount = str(ingredient_in_dish.standard_amount) if ingredient_in_dish.standard_amount else ""
+            ingredient_item = IngredientItem(ingredient_in_dish, self.AmountColumn, tree=self.ingredients_tree)
+            ingredient_item.addQLineEdit(self.AmountColumn, standard_amount)
 
     
+    def getAmounts(self):
+        amounts = {}
+        for i in range(self.ingredients_tree.topLevelItemCount()):
+            ingredient_item = self.ingredients_tree.topLevelItem(i)
+            amounts[ingredient_item.ingredient.name] = ingredient_item.getAmount()
+        return amounts
+
+    
+    def calculate(self):
+        self.current_dish.calculate(self.getAmounts(), self.nutrients_table)
+
+
     def fill_to_target(self):
         """
         Sets the amount of one empty ingredient to match target calories.
         """
+        if not self.current_dish:
+            print("Please select a dish first. ")
+            return
+        
         # Make sure the target value is a valid number
         target = self.target.text()
         if not target:
@@ -143,24 +121,20 @@ class MakeMealWidget(QWidget):
         except ValueError:
             print("Target calorie count must be a number.")
             return
-
-        # Get calories and ingredient
-        calories, empty_ingredient = self.calculate(fill_to_target=True)
-        calories_to_go = target-calories
-
-        if not empty_ingredient:
-            print("Please remove amount for 1 (one) ingredient.")
-            return
-
-        # Make sure we're not in negatives
-        if calories_to_go < 0:
-            print(f"The selected amount is already higher than target: {calories}")
-            return
         
-        # Calculate amount
-        amount_in_grams = calories_to_go*100 / ingredients[empty_ingredient.name]["Calories"]
-        amount_in_unit = amount_in_grams / ingredients[empty_ingredient.name]["to_grams"]
+        # Calculate amount of remaining ingredient
+        empty_ingredient_name, amount = self.current_dish.fill_to_target(target, self.getAmounts())
+        if not empty_ingredient_name:
+            return
 
-        # Set amount and display results
-        empty_ingredient.setAmount(round(amount_in_unit, 1))
+        # Find empty ingredient
+        for i in range(self.ingredients_tree.topLevelItemCount()):
+            ingredient_item = self.ingredients_tree.topLevelItem(i)
+            if ingredient_item.ingredient.name == empty_ingredient_name:
+                empty_ingredient = ingredient_item
+                break
+
+        # Set amount and calculate
+        empty_ingredient.setAmount(round(amount, 1))
         self.calculate()
+    

@@ -1,9 +1,5 @@
-from collections import namedtuple
-
-Ingredient = namedtuple("Ingredient", ["unit", "standard_amount"])
-
 # All values given per 100g of ingredient
-ingredients = {
+ingredients_database = {
     "Chicken": {
         "to_grams": 1,
         "Calories": 147,

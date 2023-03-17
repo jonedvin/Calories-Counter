@@ -1,38 +1,30 @@
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QTableWidget, QTableWidgetItem, QLineEdit
-import enum
-
-
-class unit(enum.Enum):
-    g = "g"    # Grams
-    dl = "dl"   # desi Litres
-    tbsp = "tbsp" # Table spoons
-    tsp = "tsp"  # Tea spoons
-    unit = "unit" # Standard unit
+from modules.food import Food, IngredientInDish, unit
 
 
 
 class IngredientItem(QTreeWidgetItem):
-    def __init__(self, name: str, unit: unit, amount_column: int, *args, tree: QTreeWidget = None, **kwargs):
+    def __init__(self, ingredient_in_dish: IngredientInDish, amount_column: int, *args, tree: QTreeWidget = None, **kwargs):
         """ Class for displaying an ingredient in its tree. """
         super().__init__(*args, **kwargs)
         
-        self.name = name
-        self.unit = unit
+        self.ingredient = ingredient_in_dish.ingredient
+        self.unit = ingredient_in_dish.unit
         self.amount_column = amount_column
 
         self.tree = tree
         if self.tree:
             self.tree.addTopLevelItem(self)
 
-        self.setText(0, name)
-        self.setText(2, unit.value)
+        self.setText(0, self.ingredient.name)
+        self.setText(2, self.unit.value)
 
     @property
     def amount(self):
         """ Returns the amount specified. """
         return self.text(3)
     
-    def addQLineWidget(self, column: int, standard_amount: float):
+    def addQLineEdit(self, column: int, standard_amount: float):
         """ Adds a QLineEdit widget in the specified column. """
         self.tree.setItemWidget(self, column, QLineEdit(standard_amount))
     
@@ -52,6 +44,7 @@ class IngredientItem(QTreeWidgetItem):
     def setAmount(self, amount: float):
         """ Sets the amount to amount."""
         self.treeWidget().itemWidget(self, self.amount_column).setText(str(amount))
+        
 
 
 class NutrientsTable(QTableWidget):
@@ -86,18 +79,16 @@ class NutrientsTable(QTableWidget):
         self.setItem(5, 0, QTableWidgetItem("Protein"))
         self.setItem(6, 0, QTableWidgetItem("Salt"))
 
-    def setValues(self, calories: float,
-                        fat: float,
-                        saturated_fat: float,
-                        carbohydrates: float,
-                        sugar: float,
-                        protein: float,
-                        salt: float):
+    def setValues(self, food: Food):
         """ Sets the given values to their respective rows in the table. """
-        self.setItem(0, 1, QTableWidgetItem(str(round(calories, 2))))
-        self.setItem(1, 1, QTableWidgetItem(str(round(fat, 2))))
-        self.setItem(2, 1, QTableWidgetItem(str(round(saturated_fat, 2))))
-        self.setItem(3, 1, QTableWidgetItem(str(round(carbohydrates, 2))))
-        self.setItem(4, 1, QTableWidgetItem(str(round(sugar, 2))))
-        self.setItem(5, 1, QTableWidgetItem(str(round(protein, 2))))
-        self.setItem(6, 1, QTableWidgetItem(str(round(salt, 2))))
+        self.setItem(0, 1, QTableWidgetItem(str(round(food.calories, 2))))
+        self.setItem(1, 1, QTableWidgetItem(str(round(food.fat, 2))))
+        self.setItem(2, 1, QTableWidgetItem(str(round(food.saturated_fat, 2))))
+        self.setItem(3, 1, QTableWidgetItem(str(round(food.carbohydrates, 2))))
+        self.setItem(4, 1, QTableWidgetItem(str(round(food.sugar, 2))))
+        self.setItem(5, 1, QTableWidgetItem(str(round(food.protein, 2))))
+        self.setItem(6, 1, QTableWidgetItem(str(round(food.salt, 2))))
+
+
+def save_made_meal(meal_name: str, nutrients):
+    pass
