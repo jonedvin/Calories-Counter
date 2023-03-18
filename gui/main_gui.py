@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QTabWidget
 from gui.make_meal_gui import MakeMealWidget
 from gui.add_ingredient_gui import AddIngredientWidget
+from gui.edit_ingredient_gui import EditIngredientWidget
 from modules.databaser import Databaser
 
 class MainWindow(QMainWindow):

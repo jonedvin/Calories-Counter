@@ -86,6 +86,12 @@ class Databaser():
             ingredients.append(ingredient)
 
         return ingredients
+
+    def get_ingredient(self, name: str) -> tuple:
+        """ Returns a list of all ingrediens. """
+        query = self.cursor.execute(f""" SELECT * FROM Ingredient WHERE Name = '{name}'""")
+        for ingredient in query:
+            return ingredient
     
 
     def add_ingredient(self,
@@ -106,3 +112,31 @@ class Databaser():
         self.cursor.execute(insert_string)
         self.conn.commit()
         print("Added ingredient")
+    
+
+    def edit_ingredient(self,
+                       name: str,
+                       to_grams: float,
+                       calories: float,
+                       fat: float,
+                       saturated_fat: float,
+                       carbohydrates: float,
+                       sugar: float,
+                       protein: float,
+                       salt: float):
+        """ Adds the given ingredient to the ingredient table in the database. """
+        insert_string = f"""
+        UPDATE Ingredient
+        SET ToGrams = {to_grams},
+            Calories = {calories},
+            Fat = {fat},
+            SaturatedFat = {saturated_fat},
+            Carbohydrates = {carbohydrates},
+            Sugar = {sugar},
+            Protein = {protein},
+            Salt = {salt}
+        WHERE Name = '{name}';
+        """
+        self.cursor.execute(insert_string)
+        self.conn.commit()
+        print("Updated ingredient")
