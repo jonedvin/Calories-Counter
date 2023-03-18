@@ -3,7 +3,7 @@ from modules.databaser import Databaser
 
 
 
-class AddIngredientWidget(QWidget):
+class IngredientWidget(QWidget):
     def __init__(self, databaser: Databaser, *args, **kwargs):
         """ Widget with components for registering new ingredients to the database. """
         super().__init__(*args, **kwargs)
@@ -28,9 +28,17 @@ class AddIngredientWidget(QWidget):
         self.edit_name_widget = QWidget()
         self.edit_name_widget.setLayout(self.edit_name)
 
+        self.remove_name = QHBoxLayout()
+        self.remove_name.addWidget(QLabel("Ingredient name:"))
+        self.remove_name.addWidget(QComboBox())
+        self.remove_name.itemAt(0).widget().setFixedWidth(self.qlabel_width)
+        self.remove_name_widget = QWidget()
+        self.remove_name_widget.setLayout(self.remove_name)
+
         self.tab_widget = QTabWidget()
         self.tab_widget.addTab(self.add_name_widget, "Add ingredient")
         self.tab_widget.addTab(self.edit_name_widget, "Edit ingredient")
+        self.tab_widget.addTab(self.remove_name_widget, "Remove ingredient")
         self.tab_widget.setFixedHeight(100)
 
         self.to_grams = QHBoxLayout()
@@ -73,10 +81,10 @@ class AddIngredientWidget(QWidget):
         self.salt.addWidget(QLineEdit())
         self.salt.itemAt(0).widget().setFixedWidth(self.qlabel_width)
 
-        self.add_edit_ingredient_button = QPushButton("Add ingredient")
+        self.add_edit_remove_ingredient_button = QPushButton("Add ingredient")
         self.button_section = QHBoxLayout()
         self.button_section.addStretch()
-        self.button_section.addWidget(self.add_edit_ingredient_button)
+        self.button_section.addWidget(self.add_edit_remove_ingredient_button)
 
         # Build widget
         self.general_layout = QVBoxLayout()
@@ -94,34 +102,61 @@ class AddIngredientWidget(QWidget):
 
         # Signals
         self.tab_widget.currentChanged.connect(self.update_view)
-        self.add_edit_ingredient_button.clicked.connect(self.add_edit_ingredient)
-        self.add_name.itemAt(1).widget().returnPressed.connect(self.add_edit_ingredient)
+        self.add_edit_remove_ingredient_button.clicked.connect(self.add_edit_remove_ingredient)
+        self.add_name.itemAt(1).widget().returnPressed.connect(self.add_edit_remove_ingredient)
         self.edit_name.itemAt(1).widget().currentTextChanged.connect(self.update_values)
-        self.to_grams.itemAt(1).widget().returnPressed.connect(self.add_edit_ingredient)
-        self.calories.itemAt(1).widget().returnPressed.connect(self.add_edit_ingredient)
-        self.fat.itemAt(1).widget().returnPressed.connect(self.add_edit_ingredient)
-        self.saturated_fat.itemAt(1).widget().returnPressed.connect(self.add_edit_ingredient)
-        self.carbohydrates.itemAt(1).widget().returnPressed.connect(self.add_edit_ingredient)
-        self.sugar.itemAt(1).widget().returnPressed.connect(self.add_edit_ingredient)
-        self.protein.itemAt(1).widget().returnPressed.connect(self.add_edit_ingredient)
-        self.salt.itemAt(1).widget().returnPressed.connect(self.add_edit_ingredient)
+        self.to_grams.itemAt(1).widget().returnPressed.connect(self.add_edit_remove_ingredient)
+        self.calories.itemAt(1).widget().returnPressed.connect(self.add_edit_remove_ingredient)
+        self.fat.itemAt(1).widget().returnPressed.connect(self.add_edit_remove_ingredient)
+        self.saturated_fat.itemAt(1).widget().returnPressed.connect(self.add_edit_remove_ingredient)
+        self.carbohydrates.itemAt(1).widget().returnPressed.connect(self.add_edit_remove_ingredient)
+        self.sugar.itemAt(1).widget().returnPressed.connect(self.add_edit_remove_ingredient)
+        self.protein.itemAt(1).widget().returnPressed.connect(self.add_edit_remove_ingredient)
+        self.salt.itemAt(1).widget().returnPressed.connect(self.add_edit_remove_ingredient)
 
     
     def update_view(self):
         """ Updates the widget to match the tab selected. """
         self.clear_values()
 
-        if self.tab_widget.currentIndex() == 0: # add_name
+        if self.tab_widget.currentIndex() == 0: # add
             self.add_name.itemAt(1).widget().setFocus()
-            self.add_edit_ingredient_button.setText("Add ingredient")
+            self.add_edit_remove_ingredient_button.setText("Add ingredient")
 
-        elif self.tab_widget.currentIndex() == 1: # edit_name
+        elif self.tab_widget.currentIndex() == 1: # edit
             self.ingredient_names = self.databaser.get_ingredient_names()
             self.edit_name.itemAt(1).widget().clear()
             self.edit_name.itemAt(1).widget().addItem("")
             self.edit_name.itemAt(1).widget().addItems(self.ingredient_names)
             self.edit_name.itemAt(1).widget().setFocus()
-            self.add_edit_ingredient_button.setText("Update ingredient")
+            self.add_edit_remove_ingredient_button.setText("Update ingredient")
+
+        elif self.tab_widget.currentIndex() == 2: # remove
+            self.ingredient_names = self.databaser.get_ingredient_names()
+            self.remove_name.itemAt(1).widget().clear()
+            self.remove_name.itemAt(1).widget().addItem("")
+            self.remove_name.itemAt(1).widget().addItems(self.ingredient_names)
+            self.remove_name.itemAt(1).widget().setFocus()
+            self.add_edit_remove_ingredient_button.setText("Remove ingredient")
+
+        # Enable/disable nutrients
+        enabled = False if self.tab_widget.currentIndex() == 2 else True
+        self.to_grams.itemAt(0).widget().setEnabled(enabled)
+        self.to_grams.itemAt(1).widget().setEnabled(enabled)
+        self.calories.itemAt(0).widget().setEnabled(enabled)
+        self.calories.itemAt(1).widget().setEnabled(enabled)
+        self.fat.itemAt(0).widget().setEnabled(enabled)
+        self.fat.itemAt(1).widget().setEnabled(enabled)
+        self.saturated_fat.itemAt(0).widget().setEnabled(enabled)
+        self.saturated_fat.itemAt(1).widget().setEnabled(enabled)
+        self.carbohydrates.itemAt(0).widget().setEnabled(enabled)
+        self.carbohydrates.itemAt(1).widget().setEnabled(enabled)
+        self.sugar.itemAt(0).widget().setEnabled(enabled)
+        self.sugar.itemAt(1).widget().setEnabled(enabled)
+        self.protein.itemAt(0).widget().setEnabled(enabled)
+        self.protein.itemAt(1).widget().setEnabled(enabled)
+        self.salt.itemAt(0).widget().setEnabled(enabled)
+        self.salt.itemAt(1).widget().setEnabled(enabled)
 
 
     def update_values(self):
@@ -168,6 +203,9 @@ class AddIngredientWidget(QWidget):
         
         elif self.tab_widget.currentIndex() == 1: # edit_name
             return self.edit_name.itemAt(1).widget().currentText()
+        
+        elif self.tab_widget.currentIndex() == 2: # remove_name
+            return self.remove_name.itemAt(1).widget().currentText()
     
         return ""
     
@@ -185,7 +223,7 @@ class AddIngredientWidget(QWidget):
         self.salt.itemAt(1).widget().setText("")
 
 
-    def add_edit_ingredient(self):
+    def add_edit_remove_ingredient(self):
         """ Adds ingredient whose info is inserted into the database. """
         # Get all ingredient names and make sure it's not registered already
         name = self.get_name()
@@ -197,6 +235,11 @@ class AddIngredientWidget(QWidget):
                     print("Ingredient already added. ")
                     self.clear_values()
                     return
+                
+        elif self.tab_widget.currentIndex() == 2: # remove
+            self.databaser.remove_ingredient(name)
+            self.update_view() # To clear away the removed ingredient
+            return
 
         # Get all values
         to_grams = self.get_value(self.to_grams)
@@ -239,4 +282,3 @@ class AddIngredientWidget(QWidget):
         else:
             print("Error: Tab not recognised!")
             return
-        

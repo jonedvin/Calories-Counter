@@ -140,3 +140,11 @@ class Databaser():
         self.cursor.execute(insert_string)
         self.conn.commit()
         print("Updated ingredient")
+
+
+    def remove_ingredient(self, name: str):
+        """ Removed the given ingredient from the database. """
+        remove_string = f""" DELETE FROM Ingredient WHERE Name = '{name}'; """
+        self.cursor.execute(remove_string)
+        self.conn.commit()
+        print(f"Removed ingredient: {name}")
