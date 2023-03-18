@@ -1,18 +1,23 @@
 from PyQt6.QtWidgets import QWidget, QComboBox, QTreeWidget, QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout
 from pyqt_modules.ingredient_item import IngredientItem
 from pyqt_modules.nutrients_table import NutrientsTable
-from modules.load_ingredients import get_ingredients, get_dishes
+from modules.databaser import Databaser
+from modules.txt_handler import add_meal_to_file
+from modules.load_data import get_ingredients, get_dishes
 
 
 class MakeMealWidget(QWidget):
     AmountColumn = 1
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, databaser: Databaser, *args, **kwargs):
         """ Widget with components for calculating the nutrients of a meal. """
         super().__init__(*args, **kwargs)
 
+        self.databaser = databaser
+        self.made_meals_filename = "data/made_meals.txt"
+
         # Get dishes and ingredients
-        self.ingredients = get_ingredients()
+        self.ingredients = get_ingredients(self.databaser)
         self.dishes = get_dishes(self.ingredients)
 
         # Current dish
@@ -66,7 +71,7 @@ class MakeMealWidget(QWidget):
         self.calculate_button.clicked.connect(self.calculate)
         self.fill_to_target_button.clicked.connect(self.fill_to_target)
         self.target.editingFinished.connect(self.fill_to_target)
-        # self.make_meal_button.clicked.connnect(pass)
+        self.make_meal_button.clicked.connect(lambda: add_meal_to_file(self.made_meals_filename, self.current_dish.to_string()))
 
 
     def update_ingredients(self):
@@ -139,7 +144,3 @@ class MakeMealWidget(QWidget):
         # Set amount and calculate
         empty_ingredient.setAmount(round(amount, 1))
         self.calculate()
-    
-
-    def save_made_meal(meal_name: str, nutrients):
-        pass

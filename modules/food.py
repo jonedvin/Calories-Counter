@@ -55,13 +55,35 @@ class Ingredient(Food):
         
         self.to_grams = to_grams
 
+    def __repr__(self):
+        string = f"{self.name}:"
+        string += f"\nTo grams: {self.to_grams}"
+        string += f"\nCalories: {self.calories}"
+        string += f"\nFat: {self.fat}"
+        string += f"\nSaturated fat: {self.saturated_fat}"
+        string += f"\nCarbohydrates: {self.carbohydrates}"
+        string += f"\nSugar: {self.sugar}"
+        string += f"\nProtein: {self.protein}"
+        string += f"\nSalt: {self.salt}"
+        return string
+
 
 class Dish(Food):
     def __init__(self, name: str):
         """ Class for representing a dish. """
+        super().__init__(name, 0, 0, 0, 0, 0, 0, 0)
         self.name = name
         self.ingredients_in_dish = {}
-        self.reset_nutrients_values()
+        self.currentAmounts = {}
+
+    def to_string(self):
+        """ Returns a string containing information to reconstruct the dish object. """
+        string = f"{self.name}-"
+
+        for name, ingredient in self.ingredients_in_dish.items():
+            string += f"{name}:{self.currentAmounts[name]}{ingredient.unit.value},"
+
+        return string[:-1]
 
     def reset_nutrients_values(self):
         """ Sets the value of all the dishes nutrients to 0. """
@@ -113,6 +135,9 @@ class Dish(Food):
             self.sugar += ingredient_in_dish.ingredient.sugar*amount_in_grams/100
             self.protein += ingredient_in_dish.ingredient.protein*amount_in_grams/100
             self.salt += ingredient_in_dish.ingredient.salt*amount_in_grams/100
+
+        # Save amounts
+        self.currentAmounts = amounts
 
         # Return result
         if fill_to_target:
