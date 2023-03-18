@@ -1,4 +1,3 @@
-from collections import namedtuple
 import enum
 
 
@@ -7,10 +6,8 @@ class unit(enum.Enum):
     dl = "dl"   # desi Litres
     tbsp = "tbsp" # Table spoons
     tsp = "tsp"  # Tea spoons
-    unit = "unit" # Standard unit
 
-
-IngredientInDish_ = namedtuple("IngredientInDish", ["name", "ingredient", "unit", "amount"])
+registered_units = ["g", "dl", "tbst", "tsp"]
 
 
 class Food():
@@ -35,14 +32,15 @@ class Food():
 
 class Ingredient(Food):
     def __init__(self, name: str,
+                       to_grams: float,
+                       unit: str,
                        calories: float,
                        fat: float,
                        saturated_fat: float,
                        carbohydrates: float,
                        sugar: float,
                        protein: float,
-                       salt: float,
-                       to_grams: float = None):
+                       salt: float ):
         """ Class for representing an ingredient. """
         super().__init__(name,
                          calories,
@@ -54,6 +52,7 @@ class Ingredient(Food):
                          salt)
         
         self.to_grams = to_grams
+        self.unit = unit
 
     def __repr__(self):
         string = f"{self.name}:"
@@ -81,7 +80,7 @@ class Dish(Food):
         string = f"{self.name}-"
 
         for name, ingredient in self.ingredients_in_dish.items():
-            string += f"{name}:{self.currentAmounts[name]}{ingredient.unit.value},"
+            string += f"{name}:{self.currentAmounts[name]} {ingredient.unit.value},"
 
         return string[:-1]
 
@@ -173,10 +172,9 @@ class Dish(Food):
 
 
 class IngredientInDish():
-    def __init__(self, name: str, ingredient: Ingredient, unit: unit, standard_amount: float):
+    def __init__(self, name: str, ingredient: Ingredient, standard_amount: float):
         self.name = name
         self.ingredient = ingredient
-        self.unit = unit
         self.standard_amount = standard_amount
 
         self.amount = standard_amount

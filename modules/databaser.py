@@ -22,6 +22,7 @@ class Databaser():
         CREATE TABLE IF NOT EXISTS Ingredient(
             Name VARCHAR(255) NOT NULL, 
             ToGrams REAL,
+            Unit VARCHAR(255),
             Calories REAL,
             Fat REAL,
             SaturatedFat REAL,
@@ -76,27 +77,50 @@ class Databaser():
         for ingredient in query:
             ingredients.append(ingredient[0])
 
-        return ingredients
+        return sorted(ingredients)
 
-    def get_ingredients(self) -> list:
-        """ Returns a list of all ingrediens. """
+    def get_ingredients(self) -> dict:
+        """ Returns a dict on the form {name: data} of all ingredients. """
         query = self.cursor.execute(""" SELECT * FROM Ingredient """)
-        ingredients = []
+        ingredients = {}
         for ingredient in query:
-            ingredients.append(ingredient)
+            ingredients[ingredient[0]] = {
+                "name": ingredient[0],
+                "to_grams": ingredient[1],
+                "unit": ingredient[2],
+                "calories": ingredient[3],
+                "fat": ingredient[4],
+                "saturated_fat": ingredient[5],
+                "carbohydrates": ingredient[6],
+                "sugar": ingredient[7],
+                "protein": ingredient[8],
+                "salt": ingredient[9],
+            }
 
         return ingredients
 
-    def get_ingredient(self, name: str) -> tuple:
-        """ Returns a list of all ingrediens. """
+    def get_ingredient(self, name: str) -> dict:
+        """ Returns a dict with the given ingredient's info. """
         query = self.cursor.execute(f""" SELECT * FROM Ingredient WHERE Name = '{name}'""")
         for ingredient in query:
-            return ingredient
+            return {
+                "name": ingredient[0],
+                "to_grams": ingredient[1],
+                "unit": ingredient[2],
+                "calories": ingredient[3],
+                "fat": ingredient[4],
+                "saturated_fat": ingredient[5],
+                "carbohydrates": ingredient[6],
+                "sugar": ingredient[7],
+                "protein": ingredient[8],
+                "salt": ingredient[9],
+            }
     
 
     def add_ingredient(self,
                        name: str,
                        to_grams: float,
+                       unit: str,
                        calories: float,
                        fat: float,
                        saturated_fat: float,
@@ -107,7 +131,7 @@ class Databaser():
         """ Adds the given ingredient to the ingredient table in the database. """
         insert_string = f""" 
         INSERT INTO Ingredient 
-        VALUES ('{name}', {to_grams}, {calories}, {fat}, {saturated_fat}, {carbohydrates}, {sugar}, {protein}, {salt})
+        VALUES ('{name}', {to_grams}, '{unit}', {calories}, {fat}, {saturated_fat}, {carbohydrates}, {sugar}, {protein}, {salt})
         """
         self.cursor.execute(insert_string)
         self.conn.commit()
@@ -117,6 +141,7 @@ class Databaser():
     def edit_ingredient(self,
                        name: str,
                        to_grams: float,
+                       unit: str,
                        calories: float,
                        fat: float,
                        saturated_fat: float,
@@ -128,6 +153,7 @@ class Databaser():
         insert_string = f"""
         UPDATE Ingredient
         SET ToGrams = {to_grams},
+            Unit = '{unit}',
             Calories = {calories},
             Fat = {fat},
             SaturatedFat = {saturated_fat},

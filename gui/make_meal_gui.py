@@ -2,32 +2,32 @@ from PyQt6.QtWidgets import QWidget, QComboBox, QTreeWidget, QPushButton, QVBoxL
 from pyqt_modules.ingredient_item import IngredientItem
 from pyqt_modules.nutrients_table import NutrientsTable
 from modules.databaser import Databaser
-from modules.txt_handler import add_meal_to_file
+from modules.txter import Txter
 from modules.load_data import get_ingredients, get_dishes
 
 
 class MakeMealWidget(QWidget):
     AmountColumn = 1
 
-    def __init__(self, databaser: Databaser, *args, **kwargs):
+    def __init__(self, databaser: Databaser, txter: Txter, *args, **kwargs):
         """ Widget with components for calculating the nutrients of a meal. """
         super().__init__(*args, **kwargs)
 
         self.databaser = databaser
+        self.txter = txter
         self.made_meals_filename = "data/made_meals.txt"
-
-        # Get dishes and ingredients
-        self.ingredients = get_ingredients(self.databaser)
-        self.dishes = get_dishes(self.ingredients)
 
         # Current dish
         self.current_dish = None
 
         # Compnonents
         self.meal = QComboBox()
-        self.meal.addItem("")
-        for dish in self.dishes:
-            self.meal.addItem(dish)
+        self.reload_meals()
+        self.reload_meals_button = QPushButton("Reload")
+        self.reload_meals_button.setFixedWidth(100)
+        self.select_meal_section = QHBoxLayout()
+        self.select_meal_section.addWidget(self.meal)
+        self.select_meal_section.addWidget(self.reload_meals_button)
 
         self.ingredients_tree = QTreeWidget()
         self.ingredients_tree.setColumnCount(3)
@@ -58,7 +58,7 @@ class MakeMealWidget(QWidget):
 
         # Build widget
         self.general_layout = QVBoxLayout()
-        self.general_layout.addWidget(self.meal)
+        self.general_layout.addLayout(self.select_meal_section)
         self.general_layout.addWidget(self.ingredients_tree)
         self.general_layout.addLayout(self.calculate_layout)
         self.general_layout.addWidget(self.nutrients_table)
@@ -68,10 +68,23 @@ class MakeMealWidget(QWidget):
         # Signals
         self.meal.currentTextChanged.connect(self.update_ingredients)
         self.meal.currentTextChanged.connect(self.nutrients_table.clear_nutrients)
+        self.reload_meals_button.clicked.connect(self.reload_meals)
         self.calculate_button.clicked.connect(self.calculate)
         self.fill_to_target_button.clicked.connect(self.fill_to_target)
         self.target.editingFinished.connect(self.fill_to_target)
-        self.make_meal_button.clicked.connect(lambda: add_meal_to_file(self.made_meals_filename, self.current_dish.to_string()))
+        self.make_meal_button.clicked.connect(lambda: self.txter.add_meal(self.current_dish.to_string()))
+
+
+    def reload_meals(self):
+        """ Clears the meals, and loads them in again, thus refereshing the list. """
+        self.meal.clear()
+
+        self.ingredients = get_ingredients(self.databaser)
+        self.dishes = get_dishes(self.txter, self.ingredients)
+
+        self.meal.addItem("")
+        for dish in self.dishes:
+            self.meal.addItem(dish)
 
 
     def update_ingredients(self):

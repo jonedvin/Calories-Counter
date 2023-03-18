@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QLabel, QTabWidget, QComboBox
 from modules.databaser import Databaser
+from modules.food import registered_units
 
 
 
@@ -46,6 +47,11 @@ class IngredientWidget(QWidget):
         self.to_grams.addWidget(QLineEdit())
         self.to_grams.itemAt(0).widget().setFixedWidth(self.qlabel_width)
 
+        self.unit = QHBoxLayout()
+        self.unit.addWidget(QLabel("Unit:"))
+        self.unit.addWidget(QLineEdit())
+        self.unit.itemAt(0).widget().setFixedWidth(self.qlabel_width)
+
         self.calories = QHBoxLayout()
         self.calories.addWidget(QLabel("Calories:"))
         self.calories.addWidget(QLineEdit())
@@ -90,6 +96,7 @@ class IngredientWidget(QWidget):
         self.general_layout = QVBoxLayout()
         self.general_layout.addWidget(self.tab_widget)
         self.general_layout.addLayout(self.to_grams)
+        self.general_layout.addLayout(self.unit)
         self.general_layout.addLayout(self.calories)
         self.general_layout.addLayout(self.fat)
         self.general_layout.addLayout(self.saturated_fat)
@@ -124,18 +131,16 @@ class IngredientWidget(QWidget):
             self.add_edit_remove_ingredient_button.setText("Add ingredient")
 
         elif self.tab_widget.currentIndex() == 1: # edit
-            self.ingredient_names = self.databaser.get_ingredient_names()
             self.edit_name.itemAt(1).widget().clear()
             self.edit_name.itemAt(1).widget().addItem("")
-            self.edit_name.itemAt(1).widget().addItems(self.ingredient_names)
+            self.edit_name.itemAt(1).widget().addItems(self.databaser.get_ingredient_names())
             self.edit_name.itemAt(1).widget().setFocus()
             self.add_edit_remove_ingredient_button.setText("Update ingredient")
 
         elif self.tab_widget.currentIndex() == 2: # remove
-            self.ingredient_names = self.databaser.get_ingredient_names()
             self.remove_name.itemAt(1).widget().clear()
             self.remove_name.itemAt(1).widget().addItem("")
-            self.remove_name.itemAt(1).widget().addItems(self.ingredient_names)
+            self.remove_name.itemAt(1).widget().addItems(self.databaser.get_ingredient_names())
             self.remove_name.itemAt(1).widget().setFocus()
             self.add_edit_remove_ingredient_button.setText("Remove ingredient")
 
@@ -143,6 +148,8 @@ class IngredientWidget(QWidget):
         enabled = False if self.tab_widget.currentIndex() == 2 else True
         self.to_grams.itemAt(0).widget().setEnabled(enabled)
         self.to_grams.itemAt(1).widget().setEnabled(enabled)
+        self.unit.itemAt(0).widget().setEnabled(enabled)
+        self.unit.itemAt(1).widget().setEnabled(enabled)
         self.calories.itemAt(0).widget().setEnabled(enabled)
         self.calories.itemAt(1).widget().setEnabled(enabled)
         self.fat.itemAt(0).widget().setEnabled(enabled)
@@ -168,14 +175,15 @@ class IngredientWidget(QWidget):
         
         ingredient = self.databaser.get_ingredient(name)
 
-        self.to_grams.itemAt(1).widget().setText(str(ingredient[1]))
-        self.calories.itemAt(1).widget().setText(str(ingredient[2]))
-        self.fat.itemAt(1).widget().setText(str(ingredient[3]))
-        self.saturated_fat.itemAt(1).widget().setText(str(ingredient[4]))
-        self.carbohydrates.itemAt(1).widget().setText(str(ingredient[5]))
-        self.sugar.itemAt(1).widget().setText(str(ingredient[6]))
-        self.protein.itemAt(1).widget().setText(str(ingredient[7]))
-        self.salt.itemAt(1).widget().setText(str(ingredient[8]))
+        self.to_grams.itemAt(1).widget().setText(str(ingredient["to_grams"]))
+        self.unit.itemAt(1).widget().setText(str(ingredient["unit"]))
+        self.calories.itemAt(1).widget().setText(str(ingredient["calories"]))
+        self.fat.itemAt(1).widget().setText(str(ingredient["fat"]))
+        self.saturated_fat.itemAt(1).widget().setText(str(ingredient["saturated_fat"]))
+        self.carbohydrates.itemAt(1).widget().setText(str(ingredient["carbohydrates"]))
+        self.sugar.itemAt(1).widget().setText(str(ingredient["sugar"]))
+        self.protein.itemAt(1).widget().setText(str(ingredient["protein"]))
+        self.salt.itemAt(1).widget().setText(str(ingredient["salt"]))
 
     
     def get_value(self, layout: QHBoxLayout) -> float:
@@ -199,21 +207,33 @@ class IngredientWidget(QWidget):
     def get_name(self) -> str:
         """ Returns the ingredient name. """
         if self.tab_widget.currentIndex() == 0: # add_name
-            return self.add_name.itemAt(1).widget().text()
+            return self.add_name.itemAt(1).widget().text().strip()
         
         elif self.tab_widget.currentIndex() == 1: # edit_name
-            return self.edit_name.itemAt(1).widget().currentText()
+            return self.edit_name.itemAt(1).widget().currentText().strip()
         
         elif self.tab_widget.currentIndex() == 2: # remove_name
-            return self.remove_name.itemAt(1).widget().currentText()
+            return self.remove_name.itemAt(1).widget().currentText().strip()
     
         return ""
     
+    def get_unit(self) -> str:
+        """ Returns the unit. """
+        unit = self.unit.itemAt(1).widget().text().strip()
+        if unit:
+            if unit not in registered_units:
+                print("Unit not regonised. Make sure to use one of the following:")
+                for unit in registered_units:
+                    print(f"- {unit}")
+                return None
+        return unit
+
 
     def clear_values(self):
         """ Clears the values of the QLineEdits. """
         self.add_name.itemAt(1).widget().setText("")
         self.to_grams.itemAt(1).widget().setText("")
+        self.unit.itemAt(1).widget().setText("")
         self.calories.itemAt(1).widget().setText("")
         self.fat.itemAt(1).widget().setText("")
         self.saturated_fat.itemAt(1).widget().setText("")
@@ -243,6 +263,7 @@ class IngredientWidget(QWidget):
 
         # Get all values
         to_grams = self.get_value(self.to_grams)
+        unit = self.get_unit()
         calories = self.get_value(self.calories)
         fat = self.get_value(self.fat)
         saturated_fat = self.get_value(self.saturated_fat)
@@ -254,6 +275,7 @@ class IngredientWidget(QWidget):
         # Check that all values are inserted and okay
         if name is None \
         or to_grams is None  \
+        or unit is None  \
         or calories is None  \
         or fat is None  \
         or saturated_fat is None  \
@@ -261,24 +283,15 @@ class IngredientWidget(QWidget):
         or sugar is None  \
         or protein is None  \
         or salt is None:
-            print("Missing values:")
-            print(name)
-            print(to_grams)
-            print(calories)
-            print(fat)
-            print(saturated_fat)
-            print(carbohydrates)
-            print(sugar)
-            print(protein)
-            print(salt)
+            print("Missing values.")
             return
 
         # Add ingredient
         if self.tab_widget.currentIndex() == 0: # add
-            self.databaser.add_ingredient(name, to_grams, calories, fat, saturated_fat, carbohydrates, sugar, protein, salt)
+            self.databaser.add_ingredient(name, to_grams, unit, calories, fat, saturated_fat, carbohydrates, sugar, protein, salt)
             self.clear_values()
         elif self.tab_widget.currentIndex() == 1: # edit
-            self.databaser.edit_ingredient(name, to_grams, calories, fat, saturated_fat, carbohydrates, sugar, protein, salt)
+            self.databaser.edit_ingredient(name, to_grams, unit, calories, fat, saturated_fat, carbohydrates, sugar, protein, salt)
         else:
             print("Error: Tab not recognised!")
             return

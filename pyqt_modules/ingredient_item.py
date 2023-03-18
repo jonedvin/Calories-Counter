@@ -8,7 +8,6 @@ class IngredientItem(QTreeWidgetItem):
         super().__init__(*args, **kwargs)
         
         self.ingredient = ingredient_in_dish.ingredient
-        self.unit = ingredient_in_dish.unit
         self.amount_column = amount_column
 
         self.tree = tree
@@ -16,7 +15,7 @@ class IngredientItem(QTreeWidgetItem):
             self.tree.addTopLevelItem(self)
 
         self.setText(0, self.ingredient.name)
-        self.setText(2, self.unit.value)
+        self.setText(2, self.ingredient.unit)
 
     @property
     def amount(self):
