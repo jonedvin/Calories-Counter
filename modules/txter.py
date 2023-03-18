@@ -34,9 +34,36 @@ class Txter():
     ###################################################################################################
     ##### Meal functions ##############################################################################
     ###################################################################################################
+    
+    def get_meals(self) -> list:
+        """ Returns a dict on the form [(dish_name, meal_string, {nutrient_name: value})] of all meals. """
+        if not os.path.exists(self.made_meals_filename):
+            print(f"File not recognised: {self.made_meals_filename}")
+            return 
+        
+        meal_list = []
+        lines = self.get_file_lines(self.made_meals_filename)
+        for line in lines:
+            if not line.strip():
+                continue
+
+            name = line.split("-")[0]
+            data = line.split("-")[1]
+
+            nutrient_dict = {}
+            for nutrient in data.split(","):
+                nutrient_name = nutrient.split(":")[0]
+                value = float(nutrient.split(":")[1])
+                nutrient_dict[nutrient_name] = value
+
+            meal_list.append( (name, line, nutrient_dict) )
+        
+        return meal_list
+
 
     def add_meal(self, meal_string: str):
         """ Adds given meal to the made_meals text file. """
+        print(f"add_meal run with: {meal_string}")
         if not os.path.exists(self.made_meals_filename):
             print(f"File not recognised: {self.made_meals_filename}")
             return 
@@ -53,7 +80,7 @@ class Txter():
         
         lines = self.get_file_lines(self.made_meals_filename)
         for line in lines:
-            if line.strip() == meal_string:
+            if line.strip() == meal_string.strip():
                 lines.remove(line)
                 break
         

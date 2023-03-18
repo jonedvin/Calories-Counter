@@ -75,7 +75,8 @@ class Dish(Food):
         self.ingredients_in_dish = {}
         self.currentAmounts = {}
 
-    def to_string(self):
+
+    def to_string(self) -> str:
         """ Returns a string containing information to reconstruct the dish object. """
         string = f"{self.name}-"
 
@@ -83,6 +84,20 @@ class Dish(Food):
             string += f"{name}:{self.currentAmounts[name]} {ingredient.unit.value},"
 
         return string[:-1]
+    
+
+    def to_made_meal_string(self) -> str:
+        """ Returns a string containing the meal name, and its nutrients. """
+        string = f"{self.name}-"
+        string += f"calories:{self.calories},"
+        string += f"fat:{self.fat},"
+        string += f"saturated_fat:{self.saturated_fat},"
+        string += f"carbohydrates:{self.carbohydrates},"
+        string += f"sugar:{self.sugar},"
+        string += f"protein:{self.protein},"
+        string += f"salt:{self.salt}"
+        return string
+
 
     def reset_nutrients_values(self):
         """ Sets the value of all the dishes nutrients to 0. """

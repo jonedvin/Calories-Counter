@@ -72,7 +72,7 @@ class MakeMealWidget(QWidget):
         self.calculate_button.clicked.connect(self.calculate)
         self.fill_to_target_button.clicked.connect(self.fill_to_target)
         self.target.editingFinished.connect(self.fill_to_target)
-        self.make_meal_button.clicked.connect(lambda: self.txter.add_meal(self.current_dish.to_string()))
+        self.make_meal_button.clicked.connect(self.make_meal)
 
 
     def reload_meals(self):
@@ -85,6 +85,20 @@ class MakeMealWidget(QWidget):
         self.meal.addItem("")
         for dish in self.dishes:
             self.meal.addItem(dish)
+
+    
+    def make_meal(self):
+        """ Makes a meal and saves it. """
+        self.calculate()
+
+        # Make sure all values are okay
+        amounts = self.getAmounts()
+        for amount in amounts:
+            if not amount:
+                print("Cannot make, missing amount")
+                return
+
+        self.txter.add_meal(self.current_dish.to_made_meal_string())
 
 
     def update_ingredients(self):
