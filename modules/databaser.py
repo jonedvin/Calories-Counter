@@ -33,12 +33,32 @@ class Databaser():
             CONSTRAINT ingredient_pk PRIMARY KEY (Name)
         );"""
         self.cursor.execute(ingredients_table)
+
+        eaten_meals_table = """
+        CREATE TABLE IF NOT EXISTS EatenMeals(
+            UserId INTEGER NOT NULL,
+            Timestamp INTEGER NOT NULL,
+            MealName VARCHAR(255),
+            Calories REAL NOT NULL,
+            Fat REAL,
+            SaturatedFat REAL,
+            Carbohydrates REAL,
+            Sugar REAL,
+            Protein REAL,
+            Salt REAL,
+            CONSTRAINT ingredient_pk PRIMARY KEY (UserId)
+        );"""
+        self.cursor.execute(ingredients_table)
            
         self.conn.commit()
 
     def close(self):
         """ Closes the database. """
         self.conn.close()
+
+    ###################################################################################################
+    ##### User functions ##############################################################################
+    ###################################################################################################
 
     def add_user(self, name: str, target_calorie_count: int):
         """ Adds a new user to the User table in the database. """
@@ -63,12 +83,26 @@ class Databaser():
         self.cursor.execute(insert_string)
         self.conn.commit()
 
+    
+    def get_users(self) -> list:
+        """ Returns a list of user tuples, that can be fed directly into the User class. """
+        query = self.cursor.execute(""" SELECT * FROM User """)
+        users = []
+        for user in query:
+            users.append(user)
+        return users
+
+
     def print_users(self):
         users = self.cursor.execute(""" SELECT * FROM User """)
         for user in users:
             for col in range(len(user)):
                 print(user[col],end=" ")
             print()
+
+    ###################################################################################################
+    ##### Ingredient functions ########################################################################
+    ###################################################################################################
 
     def get_ingredient_names(self) -> list:
         """ Returns a list of all ingredient names. """
