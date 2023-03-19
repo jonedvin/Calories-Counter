@@ -45,10 +45,9 @@ class Databaser():
             Carbohydrates REAL,
             Sugar REAL,
             Protein REAL,
-            Salt REAL,
-            CONSTRAINT ingredient_pk PRIMARY KEY (UserId)
+            Salt REAL
         );"""
-        self.cursor.execute(ingredients_table)
+        self.cursor.execute(eaten_meals_table)
            
         self.conn.commit()
 
@@ -99,6 +98,45 @@ class Databaser():
             for col in range(len(user)):
                 print(user[col],end=" ")
             print()
+
+
+    def user_ate_meal(self, userId: int, 
+                            timestamp: int, 
+                            meal_name: str,
+                            calories: float,
+                            fat: float = None,
+                            saturated_fat: float = None,
+                            carbohydrates: float = None,
+                            sugar: float = None,
+                            protein: float = None,
+                            salt: float = None):
+        """ Saves the meal to the user's eaten meals database. """
+        if not fat:
+            fat = "NULL"
+        if not saturated_fat:
+            saturated_fat = "NULL"
+        if not carbohydrates:
+            carbohydrates = "NULL"
+        if not sugar:
+            sugar = "NULL"
+        if not protein:
+            protein = "NULL"
+        if not salt:
+            salt = "NULL"
+
+        insert_string = f""" INSERT INTO EatenMeals VALUES ({userId}, 
+                                                            {timestamp}, 
+                                                            '{meal_name}', 
+                                                            {calories}, 
+                                                            {fat}, 
+                                                            {saturated_fat}, 
+                                                            {carbohydrates}, 
+                                                            {sugar}, 
+                                                            {protein}, 
+                                                            {salt}); """
+        self.cursor.execute(insert_string)
+        self.conn.commit()
+
 
     ###################################################################################################
     ##### Ingredient functions ########################################################################

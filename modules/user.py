@@ -20,6 +20,23 @@ class User():
         self = cls(databaser, id, name, target_calorie_count)
         return self
     
-    def eat_meal(self, timestamp: int, meal_name: str, calories: float):
+    def eat_meal(self, timestamp: int, 
+                       meal_name: str, 
+                       calories: float,
+                       fat: float = None,
+                       saturated_fat: float = None,
+                       carbohydrates: float = None,
+                       sugar: float = None,
+                       protein: float = None,
+                       salt: float = None):
         """ Registeres that the given meal was eaten at given time. """
-        self.databaser.user_ate_meal(self.id, timestamp, meal_name, calories)
+        self.databaser.user_ate_meal(self.id, 
+                                     timestamp, 
+                                     meal_name, 
+                                     calories,
+                                     fat,
+                                     saturated_fat,
+                                     carbohydrates,
+                                     sugar,
+                                     protein,
+                                     salt)
