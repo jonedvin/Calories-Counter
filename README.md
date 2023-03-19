@@ -6,13 +6,12 @@ Implemented:
     '- Interface for adding/editing/removing ingredients
     '- Interface for adding/editing/removing dishes
     '- Interface for seeing/removing made meals
-
-Plans for project:
 - Log own calorie etc. intake
     '- Interface for "eating a meal". Allows user to select meal already made, or insert meal name and calories manually
     '- Interface for viewing history as a graph
 
 Ambitions for project:
+- Add telegram bot to communicate with script remotely
 - Plan daily/weekly meals
     '- interface for planning meals according to ones target calorie count
     '- Extend meal planner to work with partner
