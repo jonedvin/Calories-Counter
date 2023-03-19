@@ -1,46 +1,58 @@
-import sys
-from PyQt6.QtWidgets import QDialog, QApplication, QPushButton, QVBoxLayout
+from PyQt6.QtWidgets import QPushButton, QApplication, QWidget
+from PyQt6.QtCore import Qt, QPoint
+from PyQt6.QtGui import QMouseEvent
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-import matplotlib.pyplot as plt
 
-import random
+class DragButton(QPushButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-class Window(QDialog):
-    def __init__(self, parent=None):
-        super(Window, self).__init__(parent)
+        self.__mousePressPos = None
+        self.__mouseMovePos = None
 
-        self.figure = plt.figure()
-        self.canvas = FigureCanvas(self.figure)
+    def mousePressEvent(self, event: QMouseEvent):
+        """ Overridden to save press location. """
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.__mousePressPos = event.globalPosition()
+            self.__mouseMovePos = event.globalPosition()
 
-        # self.toolbar = NavigationToolbar(self.canvas, self)
+        return super(DragButton, self).mousePressEvent(event)
 
-        # self.button = QPushButton('Plot')
-        # self.button.clicked.connect(self.plot)
+    def mouseMoveEvent(self, event: QMouseEvent):
+        """ Overriden to move widget with mouse if left mouse button is held down. """
+        if event.buttons() == Qt.MouseButton.LeftButton:
+            # Calculate new position of widget
+            widgetPos = self.mapToGlobal(self.pos())
+            mousePos = event.globalPosition()
+            mousePosDiff = mousePos - self.__mouseMovePos
+            newPos = self.mapFromGlobal(widgetPos + QPoint(int(mousePosDiff.x()), int(mousePosDiff.y())))
+            self.move(newPos)
 
-        # Build
-        layout = QVBoxLayout()
-        # layout.addWidget(self.toolbar)
-        layout.addWidget(self.canvas)
-        # layout.addWidget(self.button)
-        self.setLayout(layout)
+            self.__mouseMovePos = mousePos
 
-    def plot(self):
-        ''' plot some random stuff '''
-        data = [random.random() for i in range(10)]
+        super(DragButton, self).mouseMoveEvent(event)
 
-        self.figure.clear()
-        
-        ax = self.figure.add_subplot(111)
-        ax.plot(data, '*-')
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        """ Overridden to not click when moved"""
+        if self.__mousePressPos is not None:
+            moved = event.globalPosition() - self.__mousePressPos 
+            if moved.manhattanLength() > 3:
+                event.ignore()
+                return
 
-        self.canvas.draw()
+        super(DragButton, self).mouseReleaseEvent(event)
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
+def clicked():
+    print("click as normal!")
 
-    main = Window()
-    main.show()
+if __name__ == "__main__":
+    app = QApplication([])
+    w = QWidget()
+    w.resize(800,600)
 
-    sys.exit(app.exec())
+    button = DragButton("Drag", w)
+    button.clicked.connect(clicked)
+    button.setEnabled(False)
+
+    w.show()
+    app.exec()
