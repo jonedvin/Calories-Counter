@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QLabel, QTabWidget, QComboBox, QTreeWidget, QTreeWidgetItem
-from pyqt_modules.datetime import DateTimeWidget
+from pyqt_modules.datetime_widget import DateTimeWidget
 from modules.databaser import Databaser
 from modules.txter import Txter
 from modules.user import User
@@ -12,33 +12,38 @@ class EatMealWidget(QWidget):
 
         self.databaser = databaser
         self.txter = txter
-        self.qlabel_width = 70
+        self.qlabel_width_short = 70
+        self.qlabel_width_long = 150
 
         # Consumer
         self.user_label = QLabel("Consumer:")
+        self.user_label.setFixedWidth(self.qlabel_width_long)
         self.user = QComboBox()
         self.user_section = QHBoxLayout()
         self.user_section.addWidget(self.user_label)
         self.user_section.addWidget(self.user)
+        self.user_section.addStretch()
         self.load_users()
 
         # Consumtion time
         self.eat_time_label = QLabel("Consumption time:")
+        self.eat_time_label.setFixedWidth(self.qlabel_width_long)
         self.eat_time = DateTimeWidget()
         self.eat_time_section = QHBoxLayout()
         self.eat_time_section.addWidget(self.eat_time_label)
         self.eat_time_section.addWidget(self.eat_time)
+        self.eat_time_section.addStretch()
 
         # Unregistered meal 
         self.meal_name_label = QLabel("Meal name: ")
-        self.meal_name_label.setFixedWidth(self.qlabel_width)
+        self.meal_name_label.setFixedWidth(self.qlabel_width_short)
         self.meal_name = QLineEdit()
         self.meal_name_section = QHBoxLayout()
         self.meal_name_section.addWidget(self.meal_name_label)
         self.meal_name_section.addWidget(self.meal_name)
 
         self.meal_calories_label = QLabel("Calories:")
-        self.meal_calories_label.setFixedWidth(self.qlabel_width)
+        self.meal_calories_label.setFixedWidth(self.qlabel_width_short)
         self.meal_calories = QLineEdit()
         self.meal_calories_section = QHBoxLayout()
         self.meal_calories_section.addWidget(self.meal_calories_label)
@@ -160,7 +165,7 @@ class EatMealWidget(QWidget):
             return
         
         # Get time
-        timestamp = self.eat_time
+        timestamp = self.eat_time.get_timestamp()
 
         # Eat meal
         print(timestamp, user.name, meal_name, calories)
