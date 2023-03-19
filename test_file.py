@@ -1,16 +1,46 @@
-# from modules.databaser import Databaser
-# from modules.txter import *
-# import sqlite3
+import sys
+from PyQt6.QtWidgets import QDialog, QApplication, QPushButton, QVBoxLayout
 
-# if __name__ == "__main__":
-#     databaser = Databaser("data/database.db")
-#     # databaser.addUser("Ovar", 3500)
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+import matplotlib.pyplot as plt
 
-#     # databaser.printUsers()
-#     # ingredients = databaser.get_ingredient_names()
-#     databaser.move_over_ingredients()
+import random
 
-#     # filename = "data/made_meals.txt"
-#     # lines = get_file_lines(filename)
-#     # write_lines_to_file(filename, lines)
+class Window(QDialog):
+    def __init__(self, parent=None):
+        super(Window, self).__init__(parent)
 
+        self.figure = plt.figure()
+        self.canvas = FigureCanvas(self.figure)
+
+        # self.toolbar = NavigationToolbar(self.canvas, self)
+
+        # self.button = QPushButton('Plot')
+        # self.button.clicked.connect(self.plot)
+
+        # Build
+        layout = QVBoxLayout()
+        # layout.addWidget(self.toolbar)
+        layout.addWidget(self.canvas)
+        # layout.addWidget(self.button)
+        self.setLayout(layout)
+
+    def plot(self):
+        ''' plot some random stuff '''
+        data = [random.random() for i in range(10)]
+
+        self.figure.clear()
+        
+        ax = self.figure.add_subplot(111)
+        ax.plot(data, '*-')
+
+        self.canvas.draw()
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+
+    main = Window()
+    main.show()
+
+    sys.exit(app.exec())

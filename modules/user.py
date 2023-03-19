@@ -10,6 +10,8 @@ class User():
         self.name = name
         self.target_calorie_count = target_calorie_count
 
+        self.eaten_meals = None
+
     @classmethod
     def fromDatabase(cls, databaser: Databaser, users_tuple: tuple):
         """ Inits User from user_tuple from database. """
@@ -40,3 +42,9 @@ class User():
                                      sugar,
                                      protein,
                                      salt)
+        
+    def get_eaten_meals(self) -> list:
+        """ Returns a list of eaten meals. """
+        if not self.eaten_meals:
+            self.eaten_meals = self.databaser.get_eaten_meals_by_user(self.id)
+        return self.eaten_meals

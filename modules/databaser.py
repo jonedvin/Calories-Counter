@@ -138,6 +138,18 @@ class Databaser():
         self.conn.commit()
 
 
+    def get_eaten_meals_by_user(self, userId: int) -> list:
+        """ Returns a list of all meals eaten by given userId. """
+        query = self.cursor.execute(f""" SELECT * 
+                                         FROM EatenMeals
+                                         WHERE UserId = {userId} """)
+        eaten_meals = []
+        for eaten_meal in query:
+            eaten_meals.append(eaten_meal)
+
+        return eaten_meals
+
+
     ###################################################################################################
     ##### Ingredient functions ########################################################################
     ###################################################################################################
