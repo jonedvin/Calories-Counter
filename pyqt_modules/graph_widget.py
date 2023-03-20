@@ -49,7 +49,6 @@ class GraphWidget(QWidget):
         self.general_layout.setContentsMargins(0,0,0,0)
         self.general_layout.setSpacing(2)
         self.general_layout.addWidget(self.plot_canvas)
-        # self.general_layout.addWidget(self.legend_canvas)
         self.setLayout(self.general_layout)
 
 

@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem, QLineEdit
 from modules.food import IngredientInDish
+from pyqt_modules.meal_divider_widget import MealDividerWidget
 
 
 class IngredientItem(QTreeWidgetItem):
@@ -25,6 +26,10 @@ class IngredientItem(QTreeWidgetItem):
     def addQLineEdit(self, column: int, standard_amount: float):
         """ Adds a QLineEdit widget in the specified column. """
         self.tree.setItemWidget(self, column, QLineEdit(standard_amount))
+    
+    def addMealDivider(self, column: int):
+        """ Adds a QLineEdit widget in the specified column. """
+        self.tree.setItemWidget(self, column, MealDividerWidget())
     
     def getAmount(self):
         """

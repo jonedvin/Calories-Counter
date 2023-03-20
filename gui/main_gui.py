@@ -10,7 +10,7 @@ from modules.txter import Txter
 
 
 class MainWindow(QMainWindow):
-    WindowWidth = 500
+    WindowWidth = 1000
     WindowHeight = 600
 
     def __init__(self, app):

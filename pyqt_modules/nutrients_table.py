@@ -12,16 +12,15 @@ class NutrientsTable(QTableWidget):
         self.verticalHeader().setVisible(False)
         self.horizontalHeader().setVisible(False)
         self.setFixedHeight(7*self.RowHeight+2)
-        self.setFixedWidth(200+70+50+2)
 
         self.setRowCount(7)
         self.verticalHeader().setMinimumSectionSize(self.RowHeight)
         self.verticalHeader().setDefaultSectionSize(self.RowHeight)
 
         self.setColumnCount(3)
-        self.setColumnWidth(0, 200)
+        self.setColumnWidth(0, 150)
         self.setColumnWidth(1, 70)
-        self.setColumnWidth(2, 50)
+        self.setColumnWidth(2, 44)
 
         self.setItem(0, 2, QTableWidgetItem("kcal"))
         for i in range(1, self.rowCount()):
