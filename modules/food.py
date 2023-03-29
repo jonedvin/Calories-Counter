@@ -1,3 +1,4 @@
+from PyQt6.QtWidgets import QTreeWidgetItem
 import enum
 
 
@@ -67,21 +68,28 @@ class Ingredient(Food):
         return string
 
 
-class Dish(Food):
-    def __init__(self, name: str):
+class Dish(Food, QTreeWidgetItem):
+    def __init__(self, name: str, *args, **kwargs):
         """ Class for representing a dish. """
-        super().__init__(name, 0, 0, 0, 0, 0, 0, 0)
+        Food.__init__(self, name, 0, 0, 0, 0, 0, 0, 0)
+        QTreeWidgetItem.__init__(self, *args, **kwargs)
+
         self.name = name
         self.ingredients_in_dish = {}
-        self.currentAmounts = {}
+
+    
+    def setup_tree_widget_item(self) -> None:
+        """ Setup object as QTreeWidgetItem. """
+        self.calculate()
+        self.setText(0, f"{self.name}: {round(self.calories)} kcal")
 
 
     def to_string(self) -> str:
         """ Returns a string containing information to reconstruct the dish object. """
         string = f"{self.name}-"
 
-        for name, ingredient in self.ingredients_in_dish.items():
-            string += f"{name}:{self.currentAmounts[name]} {ingredient.unit.value},"
+        for name, ingredient_in_dish in self.ingredients_in_dish.items():
+            string += f"{name}:{self.ingredients_in_dish[name].amount} {ingredient_in_dish.ingredient.unit},"
 
         return string[:-1]
     
@@ -96,7 +104,10 @@ class Dish(Food):
         string += f"sugar:{self.sugar},"
         string += f"protein:{self.protein},"
         string += f"salt:{self.salt}"
-        return string
+        string += "-"
+        for ingredient, in_dish in self.ingredients_in_dish.items():
+            string += f"{ingredient}:{in_dish.amount},"
+        return string[:-1]
 
 
     def reset_nutrients_values(self):
@@ -109,10 +120,11 @@ class Dish(Food):
         self.protein = 0
         self.salt = 0
 
-    def calculate(self, amounts: dict, nutrients_table = None, fill_to_target: bool = False):
+
+    def calculate(self, nutrients_table = None, fill_to_target: bool = False):
         """
         Calculates and updates gui with nutrient values for the selected meal.\n
-        nutrients_table is required if not fill_to_target.\n
+        If nutrients_table: saves the results to given NutrientsTable.\n
         If fill_to_target: returns the total calories and the empty ingredient's name.
         """
         # Reset values
@@ -121,7 +133,7 @@ class Dish(Food):
         # Calculate totals
         empty_ingredient = None
         for _, ingredient_in_dish in self.ingredients_in_dish.items():
-            amount = amounts[ingredient_in_dish.name]
+            amount = ingredient_in_dish.amount
 
             if amount == 0:
 
@@ -150,13 +162,13 @@ class Dish(Food):
             self.protein += ingredient_in_dish.ingredient.protein*amount_in_grams/100
             self.salt += ingredient_in_dish.ingredient.salt*amount_in_grams/100
 
-        # Save amounts
-        self.currentAmounts = amounts
+            # Save amount
+            self.ingredients_in_dish[ingredient_in_dish.name].amount = amount
 
         # Return result
         if fill_to_target:
             return self.calories, empty_ingredient
-        else:
+        elif nutrients_table:
             nutrients_table.setValues(self)
 
     

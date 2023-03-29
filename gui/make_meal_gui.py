@@ -1,5 +1,4 @@
-from PyQt6.QtWidgets import QComboBox, QTreeWidget, QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QSizePolicy
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QComboBox, QTreeWidget, QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout
 from widgets.ingredient_item import IngredientItem
 from widgets.nutrients_table import NutrientsTable
 from widgets.base_widget import BaseWidget
@@ -25,7 +24,7 @@ class MakeMealWidget(BaseWidget):
 
         # Meal section
         self.meal = QComboBox()
-        self.reload_meals()
+        self.reload()
         self.reload_meals_button = QPushButton("Reload")
         self.reload_meals_button.setFixedWidth(100)
         self.select_meal_section = QHBoxLayout()
@@ -41,7 +40,6 @@ class MakeMealWidget(BaseWidget):
         self.ingredients_tree.setColumnWidth(1, 40)
         self.ingredients_tree.setColumnWidth(2, 50)
         self.ingredients_tree.setIndentation(5)
-        # self.ingredients_tree.setFixedHeight(300)
 
         # Nutrients table section
         self.nutrients_table = NutrientsTable()
@@ -88,22 +86,22 @@ class MakeMealWidget(BaseWidget):
         # Signals
         self.meal.currentTextChanged.connect(self.update_ingredients)
         self.meal.currentTextChanged.connect(self.nutrients_table.clear_nutrients)
-        self.reload_meals_button.clicked.connect(self.reload_meals)
+        self.reload_meals_button.clicked.connect(self.reload)
         self.calculate_button.clicked.connect(self.calculate)
         self.fill_to_target_button.clicked.connect(self.fill_to_target)
         self.target.editingFinished.connect(self.fill_to_target)
         self.make_meal_button.clicked.connect(self.make_meal)
 
 
-    def reload_meals(self):
+    def reload(self):
         """ Clears the meals, and loads them in again, thus refereshing the list. """
         self.meal.clear()
 
-        self.ingredients = get_ingredients(self.databaser)
-        self.dishes = get_dishes(self.txter, self.ingredients)
+        self.mainWindow.ingredients = get_ingredients(self.databaser)
+        self.mainWindow.dishes = get_dishes(self.txter, self.mainWindow.ingredients)
 
         self.meal.addItem("")
-        for dish in self.dishes:
+        for dish in self.mainWindow.dishes:
             self.meal.addItem(dish)
 
     
@@ -118,7 +116,7 @@ class MakeMealWidget(BaseWidget):
                 print("Cannot make, missing amount")
                 return
 
-        self.txter.add_meal(self.current_dish.to_made_meal_string())
+        self.txter.add_meal(self.current_dish.to_string())
 
     
     def buttons_setEnabled(self, set_enabled: bool):
@@ -141,7 +139,7 @@ class MakeMealWidget(BaseWidget):
             return
         
         # Update self.current_dish
-        self.current_dish = self.dishes[self.meal.currentText()]
+        self.current_dish = self.mainWindow.dishes[self.meal.currentText()]
 
         # Update ingredients
         self.buttons_setEnabled(True)
@@ -157,10 +155,17 @@ class MakeMealWidget(BaseWidget):
             ingredient_item = self.ingredients_tree.topLevelItem(i)
             amounts[ingredient_item.ingredient.name] = ingredient_item.getAmount()
         return amounts
+    
+
+    def updateAmounts(self):
+        for i in range(self.ingredients_tree.topLevelItemCount()):
+            ingredient_item = self.ingredients_tree.topLevelItem(i)
+            self.current_dish.ingredients_in_dish[ingredient_item.ingredient.name].amount = ingredient_item.getAmount()
 
     
     def calculate(self):
-        self.current_dish.calculate(self.getAmounts(), self.nutrients_table)
+        self.updateAmounts()
+        self.current_dish.calculate(nutrients_table=self.nutrients_table)
 
 
     def fill_to_target(self):

@@ -8,6 +8,7 @@ from gui.dish_gui import DishWidget
 from widgets.base_widget import BaseMainWindow
 from modules.databaser import Databaser
 from modules.txter import Txter
+from modules.load_data import get_ingredients, get_dishes
 
 
 class MainWindow(BaseMainWindow):
@@ -53,3 +54,23 @@ class MainWindow(BaseMainWindow):
         self.central_widget = QWidget()
         self.central_widget.setLayout(self.general_layout)
         self.setCentralWidget(self.central_widget)
+
+        # Signal
+        self.tab_widget.currentChanged.connect(self.reload_tab)
+
+        # Get info
+        self.ingredients = get_ingredients(self.databaser)
+        self.dishes = get_dishes(self.txter, self.ingredients)
+
+
+    def reload_tab(self, index):
+        """ Runs the reload function in the given tab, if it exists. """
+        widget = self.tab_widget.widget(index)
+
+        if not widget:
+            return
+        
+        if not hasattr(widget, "reload"):
+            return
+        
+        widget.reload()

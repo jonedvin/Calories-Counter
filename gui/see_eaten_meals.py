@@ -64,6 +64,9 @@ class SeeEatenMealsWidget(BaseWidget):
 
     def draw_graph(self):
         """ Loads the eaten meals for currently selected user. """
+        if not self.user.currentData():
+            print("Select user please.")
+            
         eaten_meals = self.user.currentData().get_eaten_meals()
         self.nutrients_graph.draw_graph(eaten_meals, self.time_span.currentData())
 

@@ -51,7 +51,7 @@ class EatMealWidget(BaseWidget):
         self.meal_calories_section.addWidget(self.meal_calories)
 
         # Other nutrients
-        self.other_nutrients = ["Fat", "'- of which saturated:", "Carbohydrates", "'- of which sugar:", "Protein:", "Salt:"]
+        self.other_nutrients = ["Fat:", "'- of which saturated:", "Carbohydrates:", "'- of which sugar:", "Protein:", "Salt:"]
         self.other_nutriens_section = QVBoxLayout()
         for nutrient in self.other_nutrients:
             label = QLabel(nutrient)
@@ -75,8 +75,7 @@ class EatMealWidget(BaseWidget):
         self.meals_tree.setColumnWidth(0, 200)
         self.meals_tree.setHeaderLabels(["Meals"])
         self.meals_tree.setIndentation(0)
-        self.populate_meals_tree()
-        # NOTE: The meal_string for each meal is held in QTreeWidgetItem.text(1)
+        self.reload()
 
         # Registered/unregistered meal tab
         self.tabs_widget = QTabWidget()
@@ -84,10 +83,8 @@ class EatMealWidget(BaseWidget):
         self.tabs_widget.addTab(self.eat_unregistered_widget, "Unregistered meal")
 
         # Bottom section
-        self.reload_button = QPushButton("Reload")
         self.eat_button = QPushButton("Eat meal")
         self.button_section = QHBoxLayout()
-        self.button_section.addWidget(self.reload_button)
         self.button_section.addStretch()
         self.button_section.addWidget(self.eat_button)
 
@@ -100,33 +97,11 @@ class EatMealWidget(BaseWidget):
         self.setLayout(self.general_layout)
 
         # Signals
-        self.reload_button.clicked.connect(self.populate_meals_tree)
         self.eat_button.clicked.connect(self.eat_meal)
 
     
-    def populate_meals_tree(self):
-        """ Clears the meal tree, and re-populates it. """
-        # Clear tree
-        while self.meals_tree.topLevelItemCount() > 0:
-            self.meals_tree.takeTopLevelItem(0)
-
-        # Get made meals
-        made_meals = self.txter.get_meals()
-        for meal, meal_string, nutrients in made_meals:
-            desc = f"{meal}:"
-            desc += f"\n - Calories: {round(nutrients['calories'], 2)}"
-            desc += f"\n - Fat: {round(nutrients['fat'], 2)}"
-            desc += f"\n - '- of which saturated: {round(nutrients['saturated_fat'], 2)}"
-            desc += f"\n - Carbohydrates: {round(nutrients['carbohydrates'], 2)}"
-            desc += f"\n - '- of which sugar: {round(nutrients['sugar'], 2)}"
-            desc += f"\n - Protein: {round(nutrients['protein'], 2)}"
-            desc += f"\n - Salt: {round(nutrients['salt'], 2)}"
-            desc += "\n"
-
-            item = QTreeWidgetItem()
-            item.setText(0, desc)
-            item.setText(1, meal_string)
-            self.meals_tree.addTopLevelItem(item)
+    def reload(self):
+        self.txter.populate_meals_tree(self.meals_tree, self.mainWindow.ingredients)
 
     
     def load_users(self):
@@ -139,7 +114,7 @@ class EatMealWidget(BaseWidget):
 
     def delete_meal(self):
         """ Removed the selected meal from made meals. """
-        self.txter.remove_meal(self.meals_tree.currentItem().text(1))
+        self.txter.remove_meal(self.meals_tree.currentItem().to_string())
         self.meals_tree.invisibleRootItem().removeChild(self.meals_tree.currentItem())
 
     
@@ -151,14 +126,15 @@ class EatMealWidget(BaseWidget):
                 print("Please select meal")
                 return
 
-            # Parse values from self.meals_tree.currentItem():
-            meal_name = self.meals_tree.currentItem().text(0).split("\n")[0].strip()[:-1]
-            calories = float(self.meals_tree.currentItem().text(0).split("\n")[1].split(":")[1].strip())
-
-            other_nutrients_values_in_order = []
-            for i in range(2, 8):
-                value = float(self.meals_tree.currentItem().text(0).split("\n")[i].split(":")[1].strip())
-                other_nutrients_values_in_order.append(value)
+            # Get info
+            meal_name = self.meals_tree.currentItem().name
+            calories = self.meals_tree.currentItem().calories
+            fat = self.meals_tree.currentItem().fat
+            saturated_fat = self.meals_tree.currentItem().saturated_fat
+            carbohydrates = self.meals_tree.currentItem().carbohydrates
+            sugar = self.meals_tree.currentItem().sugar
+            protein = self.meals_tree.currentItem().protein
+            salt = self.meals_tree.currentItem().salt
 
         elif self.tabs_widget.currentIndex() == 1: # unregistered
             meal_name = self.meal_name.text()
@@ -176,18 +152,30 @@ class EatMealWidget(BaseWidget):
                 print("Calories must be a number")
                 return
             
+            # Initial values
+            fat = None
+            saturated_fat = None
+            carbohydrates = None
+            sugar = None
+            protein = None
+            salt = None
+            
             # Get other nutrients
-            other_nutrients_values_in_order = []
             for i in range(self.other_nutriens_section.count()):
                 layout = self.other_nutriens_section.itemAt(i)
-                for j in range(layout.count()):
-                    widget = layout.itemAt(j).widget()
+                for widget in (layout.itemAt(j).widget() for j in range(layout.count())):
                     if type(widget) == QLineEdit:
                         try:
                             value = float(widget.text())
                         except ValueError:
                             value = None
-                        other_nutrients_values_in_order.append(value)
+
+                        fat = value if i == 0 else fat
+                        saturated_fat = value if i == 1 else saturated_fat
+                        carbohydrates = value if i == 2 else carbohydrates
+                        sugar = value if i == 3 else sugar
+                        protein = value if i == 4 else protein
+                        salt = value if i == 5 else salt
     
         else: # tab not implemented
             print(f"Error: self.tabs_widget.currentIndex() == {self.tabs_widget.currentIndex()}")
@@ -206,12 +194,12 @@ class EatMealWidget(BaseWidget):
         user.eat_meal(timestamp, 
                       meal_name, 
                       calories,
-                      other_nutrients_values_in_order[0],
-                      other_nutrients_values_in_order[1],
-                      other_nutrients_values_in_order[2],
-                      other_nutrients_values_in_order[3],
-                      other_nutrients_values_in_order[4],
-                      other_nutrients_values_in_order[5],)
+                      fat,
+                      saturated_fat,
+                      carbohydrates,
+                      sugar,
+                      protein,
+                      salt)
 
         # Delete meal if eaten
         if self.tabs_widget.currentIndex() == 0: # registered 

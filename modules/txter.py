@@ -1,3 +1,5 @@
+from PyQt6.QtWidgets import QTreeWidget, QTreeWidgetItem
+from modules.food import Dish, IngredientInDish
 import os
 
 
@@ -34,13 +36,14 @@ class Txter():
     ###################################################################################################
     ##### Meal functions ##############################################################################
     ###################################################################################################
-    
-    def get_meals(self) -> list:
-        """ Returns a dict on the form [(dish_name, meal_string, {nutrient_name: value})] of all meals. """
+
+    def get_meals(self, ingredients_dict: dict) -> list:
+        """ Returns a list of Dish objects. """
         if not os.path.exists(self.made_meals_filename):
             print(f"File not recognised: {self.made_meals_filename}")
             return 
         
+        # Get all meals
         meal_list = []
         lines = self.get_file_lines(self.made_meals_filename)
         for line in lines:
@@ -48,15 +51,18 @@ class Txter():
                 continue
 
             name = line.split("-")[0]
-            data = line.split("-")[1]
+            ingredients = line.split("-")[1]
 
-            nutrient_dict = {}
-            for nutrient in data.split(","):
-                nutrient_name = nutrient.split(":")[0]
-                value = float(nutrient.split(":")[1])
-                nutrient_dict[nutrient_name] = value
+            meal = Dish(name)
 
-            meal_list.append( (name, line, nutrient_dict) )
+            # Add all ingredients
+            for ingredient in ingredients.split(","):
+                ingredient_name = ingredient.split(":")[0]
+                ingredient_in_dish = IngredientInDish(ingredient_name, ingredients_dict[ingredient_name], 0)
+                ingredient_in_dish.amount = float(ingredient.split(":")[1].split(" ")[0])
+                meal.ingredients_in_dish[ingredient_name] = ingredient_in_dish
+            
+            meal_list.append(meal)
         
         return meal_list
 
@@ -85,6 +91,20 @@ class Txter():
                 break
         
         self.write_lines_to_file(self.made_meals_filename, lines)
+
+    
+    def populate_meals_tree(self, meals_tree: QTreeWidget, ingredients: dict):
+        """ Clears the meal tree, and re-populates it. """
+        # Clear tree
+        while meals_tree.topLevelItemCount() > 0:
+            meals_tree.takeTopLevelItem(0)
+
+        # Get made meals
+        made_meals = self.get_meals(ingredients)
+        for meal in made_meals:
+            meal.setup_tree_widget_item()
+            meals_tree.addTopLevelItem(meal)
+
 
     ###################################################################################################
     ##### Dish functions ##############################################################################
