@@ -1,14 +1,15 @@
 from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QLabel, QTabWidget, QComboBox, QTreeWidget, QTreeWidgetItem
-from pyqt_modules.datetime_widget import DateTimeWidget
+from widgets.datetime_widget import DateTimeWidget
+from widgets.base_widget import BaseWidget
 from modules.databaser import Databaser
 from modules.txter import Txter
 from modules.user import User
 
 
-class EatMealWidget(QWidget):
-    def __init__(self, databaser: Databaser, txter: Txter, *args, **kwargs):
+class EatMealWidget(BaseWidget):
+    def __init__(self, mainWindow, databaser: Databaser, txter: Txter, *args, **kwargs):
         """ Widget with components for viewing, throwing away and eating made meals. """
-        super().__init__(*args, **kwargs)
+        super().__init__(mainWindow, *args, **kwargs)
 
         self.databaser = databaser
         self.txter = txter

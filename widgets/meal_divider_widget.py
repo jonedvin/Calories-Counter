@@ -3,7 +3,7 @@ from PyQt6.QtCore import Qt, QPoint
 from PyQt6.QtGui import QMouseEvent, QResizeEvent, QMoveEvent
 
 
-class MealDividerWidget(QWidget):
+class DividerWidget(QWidget):
     def __init__(self, *args, height: int = 30, **kwargs):
         """
         Widget for showing a meal divider bar.\n
@@ -128,8 +128,8 @@ class MealDividerWidget(QWidget):
 
 
 class Divider(QPushButton):
-    def __init__(self, parent: MealDividerWidget):
-        """ Widget for showing a divider. Must be added to a MealDividerWidget. """
+    def __init__(self, parent: DividerWidget):
+        """ Widget for showing a divider. Must be added to a DividerWidget. """
         super().__init__(parent=parent)
 
         self.setFixedWidth(10)
@@ -193,7 +193,7 @@ if __name__ == "__main__":
     w = QWidget()
     w.resize(800,600)
 
-    meal_divider = MealDividerWidget(w, height=30)
+    meal_divider = DividerWidget(w, height=30)
     meal_divider.setFixedWidth(800)
     meal_divider.addDivider()
     meal_divider.addDivider()

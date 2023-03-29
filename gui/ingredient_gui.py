@@ -1,13 +1,14 @@
 from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QLabel, QTabWidget, QComboBox
+from widgets.base_widget import BaseWidget
 from modules.databaser import Databaser
 from modules.food import registered_units
 
 
 
-class IngredientWidget(QWidget):
-    def __init__(self, databaser: Databaser, *args, **kwargs):
+class IngredientWidget(BaseWidget):
+    def __init__(self, mainWindow, databaser: Databaser, *args, **kwargs):
         """ Widget with components for registering new ingredients to the database. """
-        super().__init__(*args, **kwargs)
+        super().__init__(mainWindow, *args, **kwargs)
 
         self.databaser = databaser
         self.qlabel_width = 130

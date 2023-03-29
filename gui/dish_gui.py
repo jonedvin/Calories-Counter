@@ -1,12 +1,13 @@
-from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QLabel, QTabWidget, QComboBox, QTreeWidget, QTreeWidgetItem
+from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLineEdit, QHBoxLayout, QLabel
+from PyQt6.QtWidgets import QTabWidget, QComboBox, QTreeWidget, QTreeWidgetItem
+from widgets.base_widget import BaseWidget
 from modules.databaser import Databaser
 from modules.txter import Txter
 
-
-class DishWidget(QWidget):
-    def __init__(self, databaser: Databaser, txter: Txter, *args, **kwargs):
+class DishWidget(BaseWidget):
+    def __init__(self, mainWindow, databaser: Databaser, txter: Txter, *args, **kwargs):
         """ Widget with components for registering new ingredients to the database. """
-        super().__init__(*args, **kwargs)
+        super().__init__(mainWindow, *args, **kwargs)
 
         self.databaser = databaser
         self.txter = txter

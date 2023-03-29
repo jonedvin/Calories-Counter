@@ -1,12 +1,14 @@
-from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QTreeWidget, QTreeWidgetItem
+from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QHBoxLayout, QTreeWidget, QTreeWidgetItem
+from widgets.base_widget import BaseWidget
+from gui.divide_meal_gui import DivideMealWidget
 from modules.databaser import Databaser
 from modules.txter import Txter
 
 
-class MadeMealsWidget(QWidget):
-    def __init__(self, databaser: Databaser, txter: Txter, *args, **kwargs):
-        """ Widget with components for viewing and throwing away made meals. """
-        super().__init__(*args, **kwargs)
+class MadeMealsWidget(BaseWidget):
+    def __init__(self, mainWindow, databaser: Databaser, txter: Txter, *args, **kwargs):
+        """ Widget with components for viewing, throwing away and eating made meals. """
+        super().__init__(mainWindow, *args, **kwargs)
 
         self.databaser = databaser
         self.txter = txter
@@ -22,10 +24,12 @@ class MadeMealsWidget(QWidget):
         # Bottom section
         self.reload_button = QPushButton("Reload")
         self.throw_away_button = QPushButton("Throw away meal")
+        self.divide_meal_button = QPushButton("Divide meal")
         self.button_section = QHBoxLayout()
         self.button_section.addWidget(self.reload_button)
-        self.button_section.addStretch()
         self.button_section.addWidget(self.throw_away_button)
+        self.button_section.addStretch()
+        self.button_section.addWidget(self.divide_meal_button)
 
         # Build widget
         self.general_layout = QVBoxLayout()
@@ -36,6 +40,7 @@ class MadeMealsWidget(QWidget):
         # Signals
         self.reload_button.clicked.connect(self.populate_meals_tree)
         self.throw_away_button.clicked.connect(self.delete_meal)
+        self.divide_meal_button.clicked.connect(self.open_divide_meal_window)
 
     
     def populate_meals_tree(self):
@@ -67,3 +72,13 @@ class MadeMealsWidget(QWidget):
         """ Removed the selected meal from made meals. """
         self.txter.remove_meal(self.meals_tree.currentItem().text(1))
         self.meals_tree.invisibleRootItem().removeChild(self.meals_tree.currentItem())
+
+    def open_divide_meal_window(self):
+        """ Opens a window to divide the selected meal. """
+        if not self.meals_tree.currentItem():
+            print("Please select an item first.")
+            return
+        
+        self.setAllEnabled(False)
+        self.meal_divider_popup = DivideMealWidget(self.mainWindow, self, self.txter)
+        self.meal_divider_popup.show()

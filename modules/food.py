@@ -130,7 +130,7 @@ class Dish(Food):
                     if empty_ingredient:
                         print("Fill in the amount for all but 1 (one) ingredient.")
                         self.reset_nutrients_values()
-                        return
+                        return (None, None)
                     empty_ingredient = ingredient_in_dish.name
                     continue
 
@@ -138,7 +138,7 @@ class Dish(Food):
                 else:
                     print(f"{ingredient_in_dish.name} does not have a value.")
                     self.reset_nutrients_values()
-                    return
+                    return (None, None)
             
             # Add to totals
             amount_in_grams = amount*ingredient_in_dish.ingredient.to_grams
