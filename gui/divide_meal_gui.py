@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QPushButton, QVBoxLayout, QHBoxLayout, QTreeWidget, 
 from widgets.meal_divider_widget import DividerWidget
 from widgets.base_widget import BaseWidget
 from modules.txter import Txter
-from modules.food import Dish
+from modules.food import Dish, IngredientInDish
 
 
 class DivideMealWidget(BaseWidget):
@@ -87,7 +87,25 @@ class DivideMealWidget(BaseWidget):
 
     def divide_meal(self):
         """ Removed the selected meal from made meals. """
-        pass
+        # Throw away original meal
+        self.parent_.delete_meal()
+
+        # Make new meals
+        for i in range(len(self.master_divider.part_sizes)):
+            part_meal = Dish(self.meal.name)
+
+            for ingredient in (self.ingredients_tree.topLevelItem(i) for i in range(self.ingredients_tree.topLevelItemCount())):
+                part_size = self.ingredients_tree.itemWidget(ingredient, self.DividerColumn).getParts()[i]
+
+                ingredient_part = ingredient.copy()
+                ingredient_part.set_amount(ingredient.amount*part_size)
+                part_meal.add_ingredient(ingredient_part)
+
+            # Save divided meal
+            self.txter.add_meal(part_meal.to_string())
+
+        # Reload and close
+        self.parent_.reload()
         self.close()
         
     

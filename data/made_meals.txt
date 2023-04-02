@@ -1,3 +1,7 @@
 Chicken in the good sauce-Chicken:100.0 g,Broccoli:450.0 g,Rice:2.0 dl,Cream (fløte):3.0 dl,Redcurrant jam:2.0 tbsp,Dijon mustard:2.0 tbsp,Soy sauce:2.0 tsp,Chicken stock:1.0 
 
-Chicken in the good sauce-Chicken:100.0 g,Broccoli:450.0 g,Rice:1.0 dl,Cream (fløte):3.0 dl,Redcurrant jam:2.0 tbsp,Dijon mustard:2.0 tbsp,Soy sauce:2.0 tsp,Chicken stock:1.0 
+
+
+
+Chicken in the good sauce-Chicken:50.0 g,Broccoli:225.0 g,Rice:0.5 dl,Cream (fløte):1.5 dl,Redcurrant jam:1.0 tbsp,Dijon mustard:1.0 tbsp,Soy sauce:1.0 tsp,Chicken stock:0.5 
+Chicken in the good sauce-Chicken:50.0 g,Broccoli:225.0 g,Rice:0.5 dl,Cream (fløte):1.5 dl,Redcurrant jam:1.0 tbsp,Dijon mustard:1.0 tbsp,Soy sauce:1.0 tsp,Chicken stock:0.5 

@@ -108,6 +108,11 @@ class Dish(Food, QTreeWidgetItem):
         for ingredient, in_dish in self.ingredients_in_dish.items():
             string += f"{ingredient}:{in_dish.amount},"
         return string[:-1]
+    
+
+    def add_ingredient(self, ingredient_in_dish):
+        """ Adds given ingredient to dish. """
+        self.ingredients_in_dish[ingredient_in_dish.name] = ingredient_in_dish
 
 
     def reset_nutrients_values(self):
@@ -209,3 +214,18 @@ class IngredientInDish(QTreeWidgetItem):
 
         self.setText(0, self.name)
         self.setText(1, str(self.amount))
+
+    @classmethod
+    def copyFrom(cls, original):
+        """ Creates a copy of the original. """
+        self = cls(original.name, original.ingredient, original.standard_amount)
+        self.amount = original.amount
+        return self
+
+    def copy(self):
+        """ Returns a copy of given itself. """
+        return IngredientInDish.copyFrom(self)
+
+    def set_amount(self, amount: float):
+        """ Sets the amount. """
+        self.amount = amount

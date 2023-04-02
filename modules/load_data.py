@@ -31,7 +31,7 @@ def get_dishes(txter: Txter, ingredients_dict: dict) -> dict:
 
         for ingredient in ingredients_list:
             name = ingredient["name"]
-            dish.ingredients_in_dish[name] = IngredientInDish(name, ingredients_dict[name], ingredient["amount"])
+            dish.add_ingredient(IngredientInDish(name, ingredients_dict[name], ingredient["amount"]))
 
         dishes[dish_name] = dish
 
