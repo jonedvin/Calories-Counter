@@ -4,66 +4,62 @@ from PyQt6.QtGui import QMouseEvent, QResizeEvent, QMoveEvent
 
 
 class DividerWidget(QWidget):
-    def __init__(self, *args, height: int = 30, **kwargs):
+    def __init__(self, *args, width: int = 500, height: int = 30, number_of_dividers: int = 0, **kwargs):
         """
         Widget for showing a meal divider bar.\n
         Example figure of bar, with dividers at 1/2 and 3/4:\n
         ====|==|=="""
         super().__init__(*args, **kwargs)
         
+        # Constants
         self.height_ = height
+        self.width_ = width
+        self.min_max_x = (0, self.width_)
+        self.divider_width = 10
+
+        # Adjust y-coordinate of labels if height is too low to fit them inside
+        if self.height_ < 25:
+            self.bottom_margin = 20
+            self.part_size_y_adjustment = self.height_ - 13
+        else:
+            self.bottom_margin = 0
+            self.part_size_y_adjustment = (self.height_ - 30)/2
 
         # Bar to represent whole
         self.background = QPushButton()
-        self.background.setFixedHeight(height)
+        self.background.setFixedHeight(self.height_)
         self.background.setEnabled(False)
 
         # Lists to hold dividers and part sizes
         self.dividers = []
         self.part_sizes = []
 
+        # Build
+        self.general_layout = QHBoxLayout()
+        self.general_layout.setSpacing(0)
+        self.general_layout.setContentsMargins(0,0,0,self.bottom_margin)
+        self.general_layout.addWidget(self.background)
+        self.setLayout(self.general_layout)
+
+        self.setFixedWidth(self.width_)
+
         # Add one part size
         self.addPartSize()
 
-        # Build
-        self.general_layout = QHBoxLayout()
-        self.general_layout.setSpacing(5)
-        self.general_layout.setContentsMargins(0,0,0,20)
-        self.general_layout.addWidget(self.background)
-        self.setLayout(self.general_layout)
+        # Add dividers
+        for _ in range(number_of_dividers):
+            self.addDivider()
+
+        self.moveEvent(QMoveEvent(self.pos(), self.pos()))
 
         # Signals
         # self.add_divider_button.clicked.connect(self.addDivider)
 
-    
-    def resizeEvent(self, event: QResizeEvent):
-        """ Overridden to update Divider limits. """
-        min_max_x = (self.pos().x(), self.pos().x()+event.size().width())
-        for divider in self.dividers:
-            divider.update_min_max_x(min_max_x)
-        return super().resizeEvent(event)
-    
-
-    def moveEvent(self, event: QMoveEvent):
-        """ Overridden to update Divider limits. """
-        min_max_x = (event.pos().x(), event.pos().x()+self.width())
-        for divider in self.dividers:
-            divider.update_min_max_x(min_max_x)
-        return super().moveEvent(event)
-
 
     def addDivider(self):
         """ Adds a divider. """
-        # Get spawn point
-        y = self.pos().y()
-        start_x = self.pos().x()
-        end_x = self.pos().x() + self.background.width()
-        spawn_point = QPoint(int((end_x-start_x)/2), int(y))
-
-        # Spawn divider and part_size
-        new_divider = Divider(self)
-        new_divider.move(spawn_point)
-        new_divider.setVisible(True)
+        new_divider = Divider(self, self.min_max_x)
+        new_divider.move(QPoint(int(self.width_/2-self.divider_width/2), int(self.pos().y())))
         self.dividers.append(new_divider)
         self.addPartSize()
 
@@ -71,9 +67,12 @@ class DividerWidget(QWidget):
     def addPartSize(self):
         """ Adds a part_size. """
         self.part_sizes.append(QLabel(parent=self))
-        self.part_sizes[-1].setFixedWidth(40)
-        self.part_sizes[-1].setVisible(True)
+        self.part_sizes[-1].setFixedWidth(27)
         self.updatePartSizes()
+
+        # Draw dividers on top of part labels
+        if len(self.dividers) > 0:
+            self.dividers[-1].raise_()
 
     
     def deleteDivider(self, divider):
@@ -89,31 +88,33 @@ class DividerWidget(QWidget):
         """ Updates the part sizes so that everything matches. """
         self.dividers.sort(key = lambda divider: divider.pos().x())
 
-        y = self.pos().y() + self.background.height()*4/5
-        start_x = self.pos().x()
-        end_x = self.pos().x() + self.background.width()
+        # Get constants
+        y = self.background.pos().y() + self.part_size_y_adjustment
+        start_x = self.min_max_x[0]
+        end_x = self.min_max_x[1] - self.divider_width
         length = end_x - start_x
 
+        # Update part sizes
         left_x = start_x
         for i, divider in enumerate(self.dividers):
-            # Get x's
-            part_x = divider.pos().x()
-            middle_x = left_x + (part_x-left_x)/2
+            divider_x = divider.pos().x()
+            self.updateSinglePartSize(i, left_x, divider_x, y, length)
+            left_x = divider_x
+        self.updateSinglePartSize(-1, left_x, end_x, y, length)
 
-            # Update part_size
-            part_size = self.part_sizes[i]
-            new_pos = QPoint(int(middle_x-part_size.width()/2), int(y))
-            part_size.move(new_pos)
-            part_size.setText(str(round((part_x - left_x) / length, 2)))
-            
-            left_x = part_x
+    
+    def updateSinglePartSize(self, index: int, left_x, right_x, y, length):
+        """ Updates the part size at given index. """
+        part_size = self.part_sizes[index]
 
-        # Last one
-        middle_x = left_x + (end_x-left_x)/2
-        part_size = self.part_sizes[-1]
-        new_pos = QPoint(int(middle_x), int(y))
+        # Find new position
+        left_x_plus_divider_width = left_x + self.divider_width if index != 0 else left_x
+        middle_of_area_i_x = left_x_plus_divider_width + (right_x-left_x_plus_divider_width)/2
+        new_pos = QPoint(int(middle_of_area_i_x-part_size.width()/2), int(y))
+
+        # Move and update value
         part_size.move(new_pos)
-        part_size.setText(str(round((end_x - left_x) / length, 2)))
+        part_size.setText(str(round((right_x - left_x) / length, 2)))
 
 
     def getParts(self) -> list:
@@ -128,21 +129,19 @@ class DividerWidget(QWidget):
 
 
 class Divider(QPushButton):
-    def __init__(self, parent: DividerWidget):
+    def __init__(self, parent: DividerWidget, min_max_x: tuple = None):
         """ Widget for showing a divider. Must be added to a DividerWidget. """
         super().__init__(parent=parent)
 
-        self.setFixedWidth(10)
-        self.setFixedHeight(int(parent.height_*4/3))
+        self.setFixedWidth(parent.divider_width)
+        self.setFixedHeight(int(parent.height_))
 
-        self.min_man_x = (parent.pos().x(), parent.pos().x()+parent.width())
         self.__mouseMovePos = None
 
     
-    def update_min_max_x(self, min_max_x: tuple):
-        """ Updates the min and max x-values allowed. """
-        # Scale !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        self.min_man_x = min_max_x
+    @property
+    def halfWidth(self):
+        return self.width()/2
 
 
     def contextMenuEvent(self, event):
@@ -172,7 +171,7 @@ class Divider(QPushButton):
             newPos = self.mapFromGlobal(widgetPos + QPoint(int(mousePosDiff.x()), 0))
 
             # Move widget and save position
-            if self.min_man_x[0] <= newPos.x() <= self.min_man_x[1]:
+            if self.parent().min_max_x[0] <= newPos.x() <= self.parent().min_max_x[1] - self.parent().divider_width:
                 self.move(newPos)
                 self.__mouseMovePos = mousePos
 
@@ -181,22 +180,14 @@ class Divider(QPushButton):
 
         super().mouseMoveEvent(event)
 
-    
-class PartSize(QLineEdit):
-    def __init__(self, parent):
-        super().__init__(parent=parent)
-        self.setFixedWidth(40)
-
 
 if __name__ == "__main__":
     app = QApplication([])
     w = QWidget()
     w.resize(800,600)
 
-    meal_divider = DividerWidget(w, height=30)
-    meal_divider.setFixedWidth(800)
-    meal_divider.addDivider()
-    meal_divider.addDivider()
+    meal_divider = DividerWidget(w, height=25, number_of_dividers=2)
+    meal_divider.move(100, 0)
 
     button = QPushButton("Get parts", w)
     button.move(0, 200)

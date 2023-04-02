@@ -198,10 +198,14 @@ class Dish(Food, QTreeWidgetItem):
 
 
 
-class IngredientInDish():
-    def __init__(self, name: str, ingredient: Ingredient, standard_amount: float):
+class IngredientInDish(QTreeWidgetItem):
+    def __init__(self, name: str, ingredient: Ingredient, standard_amount: float, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.name = name
         self.ingredient = ingredient
         self.standard_amount = standard_amount
 
         self.amount = standard_amount
+
+        self.setText(0, self.name)
+        self.setText(1, str(self.amount))

@@ -48,6 +48,7 @@ class MadeMealsWidget(BaseWidget):
         self.txter.remove_meal(self.meals_tree.currentItem().to_string())
         self.meals_tree.invisibleRootItem().removeChild(self.meals_tree.currentItem())
 
+
     def open_divide_meal_window(self):
         """ Opens a window to divide the selected meal. """
         if not self.meals_tree.currentItem():
@@ -55,5 +56,5 @@ class MadeMealsWidget(BaseWidget):
             return
         
         self.setAllEnabled(False)
-        self.meal_divider_popup = DivideMealWidget(self.mainWindow, self, self.meals_tree.currentItem().text(1), self.txter)
+        self.meal_divider_popup = DivideMealWidget(self.mainWindow, self, self.meals_tree.currentItem(), self.txter)
         self.meal_divider_popup.show()
