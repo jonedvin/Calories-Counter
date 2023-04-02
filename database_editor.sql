@@ -1,5 +1,5 @@
 SELECT *
-FROM EatenMeals;
+FROM User;
 
-DELETE FROM EatenMeals
-WHERE UserId = 1;
+-- DELETE FROM User
+-- WHERE Id = 3;
